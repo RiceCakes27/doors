@@ -31,6 +31,6 @@ document.getElementById('garry').addEventListener('click', () => {
         }
     }, 500);
     if (clicks >= 2) {
-        document.location.href = 'garry/loading.html'
+        document.location.href = window.location.pathname.replace(/[^/]+$/,'')+'garry/loading.html';
     }
 });
