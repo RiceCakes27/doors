@@ -119,6 +119,7 @@ p:hover {
 }
 .icon p {
     text-align: center;
+    margin-bottom: 2px;astheticasthetic
 }
 .icon:hover {
     background-color: rgba(23, 35, 53, .7);
@@ -126,6 +127,8 @@ p:hover {
 .icon img {
     width: 43.5px;
     height: 43.5px;
+    pointer-events: none;
+    margin-top: 2px;
 }
 
 @keyframes shrink {
