@@ -7,14 +7,14 @@ body {
     background-image: url(assets/mybg.png);
     background-size: cover;
     background-attachment: fixed;
-    margin: 0px;
+    margin: 0;
 }
 
 body * {
     user-select: none;
 }
 
-p {
+p, button {
     color: white;
     font-size: 12px;
     font-family: 'Segoe UI', sans-serif;
@@ -24,7 +24,7 @@ p:hover {
     cursor: default;
 }
 
-#taskbar, #taskbar-apps, #start-button, .taskbar-icon, #search-bar, #taskbar-icons, #controls, .icon {
+#taskbar, #taskbar-apps, #start-button, .taskbar-icon, #search-bar, #taskbar-icons, #controls, .icon, .window-buttons {
     display: flex;
     align-items: center;
 }
@@ -148,4 +148,36 @@ p:hover {
 
 .released img, .released svg {
     animation: grow .1s ease;
+}
+
+.window {
+    position: fixed;
+    left: 25vw;
+    top: 25vh;
+    width: 960px;
+    height: 540px;
+    border-radius: 8px;
+    background-color: #1f1f1f;
+}
+.window iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+}
+
+.window-buttons {
+    right: 0;
+    position: absolute;
+    margin: -15px 5px;
+}
+.window-buttons p {
+    width: 12px;
+    height: 12px;
+    font-size: 10px;
+    padding: 0px;
+    text-align: center;
+}
+.window-buttons p:hover {
+    background-color: red;
 }

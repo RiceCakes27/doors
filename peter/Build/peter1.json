@@ -1,0 +1,16 @@
+{
+"companyName": "RiceCakes Inc.",
+"productName": "race to the clam",
+"productVersion": "2.1.0",
+"dataUrl": "peter1.data.unityweb",
+"wasmCodeUrl": "peter1.wasm.code.unityweb",
+"wasmFrameworkUrl": "peter1.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Dark",
+"backgroundColor": "#231F20",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.4.31f1"
+}

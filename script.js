@@ -21,16 +21,29 @@ document.querySelectorAll('#start-button, #search-bar, #taskbar-apps div').forEa
     });
 });
 
-let clicks = 0;
-document.getElementById('garry').addEventListener('click', () => {
-    clicks++;
-    let oldclicks = clicks;
-    setTimeout(function() {
-        if (clicks === oldclicks) {
-            clicks = 0;
+document.querySelectorAll('.icon').forEach(el => {
+    let clicks = 0;
+    el.addEventListener('click', () => {
+        clicks++;
+        let oldclicks = clicks;
+        setTimeout(function() {
+            if (clicks === oldclicks) {
+                clicks = 0;
+            }
+        }, 500);
+        if (clicks >= 2) {
+            switch(el.className.split(' ')[1]) {
+                case 'web':
+                    document.location.href = window.location.pathname.replace(/[^/]+$/,'')+el.id;
+                    break;
+                case 'app':
+                    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="close">X</p></div><iframe src="'+el.id+'"></iframe></div>');
+                    document.getElementById(el.id).style.zIndex = document.querySelectorAll('#'+el.id).length;
+                    document.querySelector('#'+el.id+' .close').addEventListener('click', () => {
+                        document.getElementById(el.id).remove();
+                    });
+                    break;
+            }
         }
-    }, 500);
-    if (clicks >= 2) {
-        document.location.href = window.location.pathname.replace(/[^/]+$/,'')+'garry/loading.html';
-    }
+    });
 });
