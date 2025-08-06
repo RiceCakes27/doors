@@ -149,3 +149,12 @@ p:hover {
 .released img, .released svg {
     animation: grow .1s ease;
 }
+
+iframe {
+    top: 0px;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    border: 0px;
+    z-index: 1;
+}

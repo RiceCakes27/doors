@@ -21,16 +21,21 @@ document.querySelectorAll('#start-button, #search-bar, #taskbar-apps div').forEa
     });
 });
 
-let clicks = 0;
-document.getElementById('garry').addEventListener('click', () => {
-    clicks++;
-    let oldclicks = clicks;
-    setTimeout(function() {
-        if (clicks === oldclicks) {
-            clicks = 0;
+document.querySelectorAll('.icon').forEach(el => {
+    let clicks = 0;
+    el.addEventListener('click', () => {
+        clicks++;
+        let oldclicks = clicks;
+        setTimeout(function() {
+            if (clicks === oldclicks) {
+                clicks = 0;
+            }
+        }, 500);
+        if (clicks >= 2) {
+            document.body.insertAdjacentHTML('afterbegin','<iframe src="'+el.id+'"></iframe>')
+            //document.getElementById('iframe').src = el.id;
+            //document.getElementById('iframe').style.display = 'block';
+            //document.location.href = window.location.pathname.replace(/[^/]+$/,'')+el.id;
         }
-    }, 500);
-    if (clicks >= 2) {
-        document.location.href = window.location.pathname.replace(/[^/]+$/,'')+'garry/loading.html';
-    }
+    });
 });
