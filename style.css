@@ -110,12 +110,14 @@ p:hover {
     height: calc(100vh - 50px);
     width: fit-content;
     flex-wrap: wrap;
+    pointer-events: none;
 }
 
 .icon {
     width: 75px;
     border-radius: 5px;
     flex-direction: column;
+    pointer-events: all;
 }
 .icon p {
     text-align: center;
@@ -165,6 +167,7 @@ p:hover {
 }
 .window > p {
     margin-left: 5px;
+    display: inline;
 }
 .window iframe {
     width: 100%;

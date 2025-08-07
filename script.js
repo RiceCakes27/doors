@@ -50,9 +50,27 @@ document.querySelectorAll('.icon').forEach(el => {
                 case 'app':
                     // i cant believe this works properly honestly
                     document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="close">X</p></div><iframe src="'+el.id+'"></iframe></div>');
-                    document.getElementById(el.id).style.zIndex = document.querySelectorAll('#'+el.id).length;
+                    let elem = document.getElementById(el.id);
+                    elem.style.zIndex = document.querySelectorAll('#'+el.id).length;
+                    elem.addEventListener('mousedown', (e) => {
+                        let elemArea = elem.getBoundingClientRect()
+                        function handleMouseMove(cursor) {
+                            elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                            elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                        };
+                        function noMoreDrag() {
+                            document.removeEventListener('mousemove', handleMouseMove);
+                            document.removeEventListener('mouseup', noMoreDrag);
+                            document.querySelector("#"+el.id+" iframe").style.pointerEvents = 'all';
+                        };
+                        if (e.target == elem || e.target == document.querySelector('#'+el.id+" > p")) {
+                            document.querySelector("#"+el.id+" iframe").style.pointerEvents = 'none';
+                            document.addEventListener('mousemove', handleMouseMove);
+                            document.addEventListener('mouseup', noMoreDrag);
+                        }
+                    });
                     document.querySelector('#'+el.id+' .close').addEventListener('click', () => {
-                        document.getElementById(el.id).remove();
+                        elem.remove();
                     });
                     break;
             }
@@ -80,10 +98,10 @@ document.body.addEventListener('mousedown', (event) => {
             box.style.top = cursor.y+"px";
             box.style.height = -1*(cursor.y)+event.y+"px";
         }
+        let boxArea = box.getBoundingClientRect();
         document.querySelectorAll('.icon').forEach(el => {
-            let boxArea = box.getBoundingClientRect();
             let iconArea = el.getBoundingClientRect();
-            var overlap = (boxArea.top <= iconArea.bottom && boxArea.bottom >= iconArea.top && boxArea.left <= iconArea.right && boxArea.right >= iconArea.left);
+            let overlap = (boxArea.top <= iconArea.bottom && boxArea.bottom >= iconArea.top && boxArea.left <= iconArea.right && boxArea.right >= iconArea.left);
             if (overlap) {
                 el.classList.add('active');
             } else {
@@ -96,7 +114,7 @@ document.body.addEventListener('mousedown', (event) => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', noMoreBox);
     };
-    if (event.y < window.innerHeight-48) {
+    if (event.target == document.body) {
         //creating the box every time is dumb
         document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
         let box = document.getElementById('box')
