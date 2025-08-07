@@ -80,6 +80,16 @@ document.body.addEventListener('mousedown', (event) => {
             box.style.top = cursor.y+"px";
             box.style.height = -1*(cursor.y)+event.y+"px";
         }
+        document.querySelectorAll('.icon').forEach(el => {
+            let boxArea = box.getBoundingClientRect();
+            let iconArea = el.getBoundingClientRect();
+            var overlap = (boxArea.top <= iconArea.bottom && boxArea.bottom >= iconArea.top && boxArea.left <= iconArea.right && boxArea.right >= iconArea.left);
+            if (overlap) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        });
     };
     function noMoreBox() {
         box.remove();
