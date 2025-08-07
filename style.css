@@ -131,6 +131,10 @@ p:hover {
     margin-top: 2px;
 }
 
+.active {
+    background-color: rgba(23, 35, 53, .9);
+}
+
 @keyframes shrink {
     0% {transform: scale(1);}
     100% {transform: scale(.8);}
@@ -159,6 +163,9 @@ p:hover {
     border-radius: 8px;
     background-color: #1f1f1f;
 }
+.window > p {
+    margin-left: 5px;
+}
 .window iframe {
     width: 100%;
     height: 100%;
@@ -180,4 +187,11 @@ p:hover {
 }
 .window-buttons p:hover {
     background-color: red;
+}
+
+#box {
+    background-color: rgba(15, 110, 195, .2);
+    border: 1px solid #106abc;
+    position: fixed;
+    pointer-events: none;
 }
