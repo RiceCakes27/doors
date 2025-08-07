@@ -24,7 +24,7 @@ p:hover {
     cursor: default;
 }
 
-#taskbar, #taskbar-apps, #start-button, .taskbar-icon, #search-bar, #taskbar-icons, #controls, .icon, .window-buttons {
+#taskbar, #taskbar-apps, #start-button, .taskbar-icon, #search-bar, #taskbar-icons, #controls, .icon, .window-buttons, #rclick {
     display: flex;
     align-items: center;
 }
@@ -162,7 +162,7 @@ p:hover {
     left: 25vw;
     top: 25vh;
     width: 960px;
-    height: 540px;
+    height: 556px;
     border-radius: 8px;
     background-color: #1f1f1f;
 }
@@ -172,7 +172,7 @@ p:hover {
 }
 .window iframe {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 16px);
     border: 0;
     border-radius: 0 0 8px 8px;
 }
@@ -201,4 +201,22 @@ p:hover {
     border: 1px solid #106abc;
     position: fixed;
     pointer-events: none;
+}
+
+#rclick {
+    position: fixed;
+    background-color: #2c2c2c;
+    width: 284px;
+    flex-direction: column;
+    border-radius: 5px;
+    border: solid 1px #36383b;
+    pointer-events: all;
+}
+#rclick p {
+    width: 280px;
+    margin: 2px;
+}
+#rclick p:hover {
+    background-color: #36383b;
+    border-radius: 5px;
 }
