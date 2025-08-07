@@ -159,9 +159,11 @@ document.body.addEventListener('mousedown', (event) => {
             el.style.pointerEvents = 'all';
         });
     };
-    document.querySelectorAll('#rclick').forEach(el => {
-        el.remove();
-    });
+    if (event.button !== 1) {
+        document.querySelectorAll('#rclick').forEach(el => {
+            el.remove();
+        });
+    }
     if (event.target == document.body && event.button !== 1) {
         //creating the box every time is dumb
         document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
@@ -207,6 +209,10 @@ document.oncontextmenu = function(e) {
         })
     }
     let rclick = document.getElementById('rclick');
-    rclick.style.left = e.x+'px';
+    if (e.x+284 > document.body.getBoundingClientRect().width) {
+        rclick.style.left = e.x-(e.x+284-document.body.getBoundingClientRect().width)+'px';
+    } else {
+        rclick.style.left = e.x+'px';
+    }
     rclick.style.top = e.y+'px';
 };
