@@ -34,6 +34,7 @@ p:hover {
     bottom: 0;
     width: 100%;
     height: 48px;
+    z-index: 98;
 }
 
 #start-button {
@@ -188,8 +189,11 @@ p:hover {
     padding: 0px;
     text-align: center;
 }
-.window-buttons p:hover {
+.window-buttons .close:hover {
     background-color: red;
+}
+.window-buttons .max:hover {
+    background-color: grey;
 }
 
 #box {
