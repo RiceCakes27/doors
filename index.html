@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta content="DoorsOS" property="og:title" />
+	<meta content= "An attempt at copying the entire windows 11 operating system in html by myself." property="og:description" />
     <meta charset="UTF-8"/>
     <title>DoorsOS</title>
     <link rel="stylesheet" href="style.css"/>
@@ -51,11 +53,13 @@
             <div class="taskbar-icon">
                 <img src="assets/task-view.png" alt="Task View"/>
             </div>
-            <div class="taskbar-icon" title="File Explorer">
+            <div id="explorer" class="taskbar-icon" title="File Explorer">
                 <img src="assets/explorer.png" alt="File Explorer"/>
+                <p>File Explorer</p>
             </div>
-            <div class="taskbar-icon" title="Microsoft Store">
+            <div id="store" class="taskbar-icon" title="Microsoft Store">
                 <img src="assets/store.png" alt="Microsoft Store"/>
+                <p>Microsoft Store</p>
             </div>
         </div>
         <div id="taskbar-icons">

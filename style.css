@@ -57,6 +57,10 @@ p:hover {
     height: 25px;
     pointer-events: none;
 }
+.taskbar-icon > p {
+    display: none;
+    position: fixed;
+}
 .taskbar-icon:hover {
     background-color: rgba(23, 35, 53, .8);
 }
@@ -123,6 +127,7 @@ p:hover {
 .icon p {
     text-align: center;
     margin-bottom: 2px;
+    pointer-events: none;
 }
 .icon:hover {
     background-color: rgba(23, 35, 53, .7);
@@ -134,7 +139,7 @@ p:hover {
     margin-top: 2px;
 }
 
-.active {
+.selected {
     background-color: rgba(23, 35, 53, .9);
 }
 
