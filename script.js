@@ -94,7 +94,10 @@ function openApp(el, url=el.id) {
             //unfullscreen when grab window while fullscreen
             if (elem.classList.contains('fullscreen')) {
                 elem.classList.remove('fullscreen');
-                //TO DO: make window return to non full screen size
+                //TO DO: make window return to non full screen position and size
+                //elem.style.width = storedBounds.width+'px';
+                //elem.style.height = storedBounds.height+'px';
+                //elem.style.left = e.x+'px';
             }
             //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
             //if there are no fullscreen windows disable acrylic taskbar
@@ -121,17 +124,19 @@ function openApp(el, url=el.id) {
             document.getElementById('taskbar').classList.remove('acrylic');
         }
     });
+    let storedBounds;
     document.querySelector('#'+elem.id+' .max').addEventListener('click', () => {
         if (elem.classList.contains('fullscreen')) {
             elem.classList.remove('fullscreen');
             if (document.querySelectorAll('.fullscreen').length < 1 && document.getElementById('taskbar').classList.contains('acrylic')) {
                 document.getElementById('taskbar').classList.remove('acrylic');
             }
-            elem.style.left = null;
-            elem.style.top = null;
-            elem.style.width = null;
-            elem.style.height = null;
+            elem.style.left = storedBounds.left+'px';
+            elem.style.top = storedBounds.top+'px';
+            elem.style.width = storedBounds.width+'px';
+            elem.style.height = storedBounds.height+'px';
         } else {
+            storedBounds = elem.getBoundingClientRect();
             elem.classList.add('fullscreen');
             document.getElementById('taskbar').classList.add('acrylic');
             elem.style.left = 0;
@@ -227,6 +232,16 @@ document.body.addEventListener('mousedown', (event) => {
             el.style.pointerEvents = 'all';
         });
     };
+    //handle menus
+    if (!event.target.classList.contains('popup')) {
+        document.querySelectorAll('.menu').forEach(el => {
+            let menuArea = el.getBoundingClientRect();
+            let overlap = (event.y <= menuArea.bottom && event.y >= menuArea.top && event.x <= menuArea.right && event.x >= menuArea.left);
+            if (!overlap) {
+                el.remove();
+            }
+        });
+    }
     //if click was not middle mouse remove right click menu
     if (event.button !== 1) {
         document.querySelectorAll('#rclick').forEach(el => {
