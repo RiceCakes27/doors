@@ -17,16 +17,9 @@ document.querySelectorAll('#start-button, #search-button, #taskbar-apps div').fo
                 openApp(el);
                 break;
             case 'popup':
-                //document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input placeholder="Search"/></div><h5>Pinned</h5><div class="menu-button"><p>All ></p></div></div>')
+                document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input placeholder="Search"/></div><h5>Pinned</h5><div class="menu-button"><p>All ></p></div></div>')
                 break;
         }
-    });
-    el.addEventListener('mouseup',  () => {
-        el.classList.remove('pressed');
-        el.classList.add('released');
-        setTimeout(function() {
-            el.classList.remove('released');
-        }, 100);
     });
 });
 //call to create new app window adds html to body and starts all need listeners
@@ -225,31 +218,41 @@ document.oncontextmenu = function(e) {
     document.querySelectorAll('#rclick').forEach(el => {
         el.remove();
     });
-    //if right clicking an icon select it
+    //if right clicking an icon and its not already selected deselct all else select
     if (e.target.classList[0] == 'icon') {
+        if (!e.target.classList.contains('selected')) {
+            document.querySelectorAll('.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
         e.target.classList.add('selected');
     }
-    let items = '<p>placeholder idk</p>';
-    document.body.insertAdjacentHTML('afterbegin', '<div id="rclick">'+items+'</div>');
-    let rclick = document.getElementById('rclick');
-    //if icons are selected add more options to right click menu
-    if (document.querySelectorAll('.selected').length > 0) {
-        rclick.insertAdjacentHTML('afterbegin', '<p id="destroy">Delete</p>');
-        document.getElementById('destroy').addEventListener('click', () => {
-            document.querySelectorAll('.selected').forEach(el => {
-                el.remove();
+    if (e.target == document.body || e.target.classList[0] == 'icon') {
+        let items = '<p>placeholder idk</p>';
+        document.body.insertAdjacentHTML('afterbegin', '<div id="rclick">'+items+'</div>');
+        let rclick = document.getElementById('rclick');
+        //if icons are selected add more options to right click menu
+        if (document.querySelectorAll('.selected').length > 0) {
+            rclick.insertAdjacentHTML('afterbegin', '<p id="deleteButton">Delete</p>');
+            document.getElementById('deleteButton').addEventListener('click', () => {
+                document.querySelectorAll('.selected').forEach(el => {
+                    el.remove();
+                });
+                rclick.remove();
             });
-            rclick.remove();
-        })
+        }
+        //prevent right click menu from going off the right of the screen
+        if (e.x+284 > document.body.getBoundingClientRect().width) {
+            rclick.style.left = e.x-(e.x+284-document.body.getBoundingClientRect().width)+'px';
+        } else {
+            rclick.style.left = e.x+'px';
+        }
+        if (e.y+rclick.getBoundingClientRect().height > document.body.getBoundingClientRect().height) {
+            rclick.style.top = e.y-rclick.getBoundingClientRect().height+'px';
+        } else {
+            rclick.style.top = e.y+'px';
+        }
     }
-    //prevent right click menu from going off the right of the screen
-    if (e.x+284 > document.body.getBoundingClientRect().width) {
-        rclick.style.left = e.x-(e.x+284-document.body.getBoundingClientRect().width)+'px';
-    } else {
-        rclick.style.left = e.x+'px';
-    }
-    //i will add code to prevent it going off the bottom as well at some point
-    rclick.style.top = e.y+'px';
 };
 //handles commands received from iframes
 window.onmessage = function(e) {
