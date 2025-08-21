@@ -9,7 +9,7 @@ updateClock();
 setInterval(updateClock, 1000);
 
 //handles animations and function for all buttons in taskbar
-document.querySelectorAll('#start-button, #search-bar, #taskbar-apps div').forEach(el => {
+document.querySelectorAll('#start-button, #search-button, #taskbar-apps div').forEach(el => {
     el.addEventListener('mousedown', () => {
         el.classList.add('pressed');
         switch(el.className.split(' ')[1]) {
@@ -17,7 +17,7 @@ document.querySelectorAll('#start-button, #search-bar, #taskbar-apps div').forEa
                 openApp(el);
                 break;
             case 'popup':
-                //insert something here
+                //document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input placeholder="Search"/></div><h5>Pinned</h5><div class="menu-button"><p>All ></p></div></div>')
                 break;
         }
     });
@@ -52,7 +52,7 @@ function openApp(el, url=el.id) {
             let allWindows = document.querySelectorAll('.window');
             if (elem.style.zIndex != allWindows.length) {
                 elem.style.zIndex = allWindows.length;
-                for (i = 0; i < allWindows.length; i++) {
+                for (let i = 0; i < allWindows.length; i++) {
                     if (allWindows[i] !== elem && allWindows[i].style.zIndex > 1) {
                         allWindows[i].style.zIndex -= 1;
                     }
@@ -160,20 +160,12 @@ document.body.addEventListener('mousedown', (event) => {
     }
     //drag selection handler
     function handleMouseMove(cursor) {
-        // the original click point moves unsure why, would love to fix if i knew how
-        if (event.x < cursor.x) {
-            box.style.width = cursor.x-event.x+"px";
-        } else {
-            box.style.left = cursor.x+"px";
-            box.style.width = -1*(cursor.x)+event.x+"px";
-        }
-        if (event.y < cursor.y) {
-            box.style.height = cursor.y-event.y+"px";
-        } else {
-            box.style.top = cursor.y+"px";
-            box.style.height = -1*(cursor.y)+event.y+"px";
-        }
-        // if icons under selection box select them
+        //calculate left/top as the minimum, width/height as the absolute difference
+        box.style.left = Math.min(event.x, cursor.x) + "px";
+        box.style.top = Math.min(event.y, cursor.y) + "px";
+        box.style.width = Math.abs(cursor.x - event.x) + "px";
+        box.style.height = Math.abs(cursor.y - event.y) + "px";
+        //if icons under selection box select them
         let boxArea = box.getBoundingClientRect();
         document.querySelectorAll('.icon').forEach(el => {
             let iconArea = el.getBoundingClientRect();
@@ -216,7 +208,7 @@ document.body.addEventListener('mousedown', (event) => {
 });
 
 document.body.addEventListener('mouseup', () => {
-    //prevent taslbar icons from staying pressed after user lets go
+    //prevent taskbar icons from staying pressed after user lets go
     document.querySelectorAll('.pressed').forEach(el => {
         el.classList.remove('pressed');
         el.classList.add('released');
