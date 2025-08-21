@@ -27,21 +27,61 @@ function openApp(el, url=el.id) {
     document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
     let elem = document.getElementById(el.id+'-app');
     elem.style.zIndex = document.querySelectorAll('.window').length;
+    //set cursor to appropriate one
+    let relativeX, relativeY, borderSize = 5;
+    elem.onmousemove = function(e) {
+        let rect = elem.getBoundingClientRect();
+        relativeX = e.clientX - rect.left, relativeY = e.clientY - rect.top; //the mouse postion on the element
+        let cursor = "";
+
+        if(relativeY < borderSize)
+            cursor += "n"; //north
+        else if(relativeY > rect.height - borderSize)
+            cursor += "s"; //south
+
+        if(relativeX < borderSize)
+            cursor += "w"; //west
+        else if(relativeX > rect.width - borderSize)
+            cursor += "e"; //east
+
+        if(cursor)
+            elem.style.cursor = cursor + "-resize";
+        else
+            elem.style.cursor = "auto";
+    }
+
+    let dragging = false;
     elem.addEventListener('mousedown', (e) => {
         let elemArea = elem.getBoundingClientRect();
+        let y = relativeY, x = relativeX;
         //window dragging
         function handleMouseMove(cursor) {
-            elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
-            elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+            if (dragging) {
+                elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+            } else {
+                if(y < borderSize) {
+                    elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                    elem.style.height = (elemArea.height+elemArea.top)-cursor.y+"px";
+                } else if(y > elemArea.height - borderSize)
+                    elem.style.height = cursor.y-(elemArea.top)+"px";
+
+                if(x < borderSize) {
+                    elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                    elem.style.width = (elemArea.width+elemArea.left)-cursor.x+"px";
+                } else if(x > elemArea.width - borderSize)
+                    elem.style.width = cursor.x-(elemArea.left)+"px";
+            }
         };
         function noMoreDrag() {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', noMoreDrag);
             elem.lastChild.style.pointerEvents = 'all';
         };
-        //window zIndex ordering
+
         if (e.target == elem || e.target == elem.firstChild) {
-            // ugh this still misorders windows sometimes no clue how to fix
+            //ugh this still misorders windows sometimes no clue how to fix
+            //window zIndex ordering
             let allWindows = document.querySelectorAll('.window');
             if (elem.style.zIndex != allWindows.length) {
                 elem.style.zIndex = allWindows.length;
@@ -51,16 +91,25 @@ function openApp(el, url=el.id) {
                     }
                 }
             }
-
+            //unfullscreen when grab window while fullscreen
             if (elem.classList.contains('fullscreen')) {
                 elem.classList.remove('fullscreen');
                 //TO DO: make window return to non full screen size
             }
+            //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
+            //if there are no fullscreen windows disable acrylic taskbar
             if (document.querySelectorAll('.fullscreen').length < 1 && document.getElementById('taskbar').classList.contains('acrylic')) {
                 document.getElementById('taskbar').classList.remove('acrylic');
             }
             //disable pointers events so dragging works better
             elem.lastChild.style.pointerEvents = 'none';
+            //tell if the user is dragging or resizing by cursor
+            if (elem.style.cursor == 'auto') {
+                dragging = true;
+            } else {
+                dragging = false;
+            }
+
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', noMoreDrag);
         }
@@ -183,20 +232,20 @@ document.body.addEventListener('mousedown', (event) => {
         document.querySelectorAll('#rclick').forEach(el => {
             el.remove();
         });
-    }
-    //if click was on body and not middle mouse
-    if (event.target == document.body && event.button !== 1) {
-        //creating the box every time is dumb, would love to fix if i knew how
-        document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
-        let box = document.getElementById('box')
-        box.style.left = event.x+"px";
-        box.style.top = event.y+"px";
-        //disable ifames to prevent issues
-        document.querySelectorAll('iframe').forEach(el => {
-            el.style.pointerEvents = 'none';
-        });
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', noMoreBox);
+        //if click was on body and not middle mouse
+        if (event.target == document.body) {
+            //creating the box every time is dumb, would love to fix if i knew how
+            document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
+            let box = document.getElementById('box')
+            box.style.left = event.x+"px";
+            box.style.top = event.y+"px";
+            //disable ifames to prevent issues
+            document.querySelectorAll('iframe').forEach(el => {
+                el.style.pointerEvents = 'none';
+            });
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', noMoreBox);
+        }
     }
 });
 
@@ -227,6 +276,7 @@ document.oncontextmenu = function(e) {
         }
         e.target.classList.add('selected');
     }
+    //TO DO: make right clicking on other stuff work
     if (e.target == document.body || e.target.classList[0] == 'icon') {
         let items = '<p>placeholder idk</p>';
         document.body.insertAdjacentHTML('afterbegin', '<div id="rclick">'+items+'</div>');
@@ -241,7 +291,7 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });
         }
-        //prevent right click menu from going off the right of the screen
+        //prevent right click menu from going off the screen
         if (e.x+284 > document.body.getBoundingClientRect().width) {
             rclick.style.left = e.x-(e.x+284-document.body.getBoundingClientRect().width)+'px';
         } else {
