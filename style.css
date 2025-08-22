@@ -84,6 +84,10 @@ h5 {
 #search-button svg {
     margin-right: 6px;
     margin-left: 20px;
+    pointer-events: none;
+}
+#search-button p {
+    pointer-events: none;
 }
 
 #taskbar-icons {

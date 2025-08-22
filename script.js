@@ -17,7 +17,18 @@ document.querySelectorAll('#start-button, #search-button, #taskbar-apps div').fo
                 openApp(el);
                 break;
             case 'popup':
-                document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input placeholder="Search"/></div><h5>Pinned</h5><div class="menu-button"><p>All ></p></div></div>')
+                document.querySelectorAll('.menu').forEach(el => {
+                    el.remove();
+                });
+                document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input placeholder="Search"/></div></div>');
+                let menu = document.getElementById(el.id.split('-')[0]+'-menu');
+                switch(el.id) {
+                    case 'start-button':
+                        menu.insertAdjacentHTML('beforeend', '<h5>Pinned</h5><div class="menu-button"><p>All ></p></div>')
+                        break;
+                    case 'search-button':
+                        break;
+                }
                 break;
         }
     });
