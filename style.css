@@ -68,7 +68,7 @@ h5 {
     position: fixed;
 }
 .taskbar-icon:hover {
-    background-color: rgba(23, 35, 53, .8);
+    background-color: rgba(97, 97, 97, 0.25);
 }
 
 #search-button {
@@ -140,7 +140,7 @@ h5 {
     pointer-events: none;
 }
 .icon:hover {
-    background-color: rgba(23, 35, 53, .7);
+    background-color: rgba(97, 97, 97, 0.25);
 }
 .icon img {
     width: 43.5px;
@@ -150,7 +150,7 @@ h5 {
 }
 
 .selected {
-    background-color: rgba(23, 35, 53, .9);
+    background-color: rgba(97, 97, 97, 0.5);
 }
 
 @keyframes shrink {
@@ -268,7 +268,11 @@ h5 {
 
 .menu-button{
     display: inline-block;
-    background-color: #1f1f1f;
+    background-color: rgba(97, 97, 97, 0.2);
+    height: 23px;
+    width: 45px;
+    text-align: center;
+    border-radius: 5px;
 }
 
 .search-bar {

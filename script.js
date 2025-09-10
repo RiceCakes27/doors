@@ -24,16 +24,17 @@ document.querySelectorAll('#start-button, #search-button, #taskbar-apps div').fo
                 let menu = document.getElementById(el.id.split('-')[0]+'-menu');
                 switch(el.id) {
                     case 'start-button':
-                        menu.insertAdjacentHTML('beforeend', '<h5>Pinned</h5><div class="menu-button"><p>All ></p></div>')
+                        menu.insertAdjacentHTML('beforeend', '<h5>Pinned</h5><div class="menu-button"><p>All ></p></div>');
                         break;
                     case 'search-button':
+                        menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
                         break;
                 }
                 break;
         }
     });
 });
-//call to create new app window adds html to body and starts all need listeners
+//call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
     document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
     let elem = document.getElementById(el.id+'-app');
