@@ -12,7 +12,7 @@ body {
     background-size: cover;
     background-attachment: fixed;
     margin: 0;
-    height: 100vh;
+    height: calc(100vh - 5px);
 }
 
 body * {
@@ -270,6 +270,7 @@ h5 {
     position: absolute;
     display: inline;
     margin-left: 3em;
+    pointer-events: none;
 }
 #rclick div pre {
     display: inline;
@@ -277,6 +278,7 @@ h5 {
     margin-left: 1.2em;
     text-align: center;
     font-family: "Segoe Icons";
+    pointer-events: none;
 }
 #rclick div:has(> p:nth-of-type(2)) p:last-child {
     right: 10px;
