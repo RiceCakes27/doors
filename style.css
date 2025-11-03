@@ -217,7 +217,7 @@ h5 {
 .window-buttons .close:hover {
     background-color: red;
 }
-.window-buttons .max:hover {
+.window-buttons > :hover {
     background-color: grey;
 }
 
@@ -238,13 +238,26 @@ h5 {
     pointer-events: all;
     z-index: 98;
 }
-#rclick p {
+#rclick div {
     width: 280px;
+    height: 20px;
     margin: 2px;
 }
-#rclick p:hover {
+#rclick div:hover {
     background-color: #36383b;
     border-radius: 5px;
+}
+#rclick div p {
+    position:absolute;
+    display: inline;
+    margin-left: 3em;
+}
+#rclick div :nth-child(2) {
+    right: 10px;
+}
+#rclick div:empty {
+    height: 1px;
+    background-color: #36383b;
 }
 
 .acrylic {

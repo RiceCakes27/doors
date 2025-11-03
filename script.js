@@ -1,3 +1,6 @@
+const icons = document.getElementById('icons');
+const taskbar = document.getElementById('taskbar');
+
 function updateClock() {
     let now = new Date();
 
@@ -61,7 +64,7 @@ document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #ta
 });
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
-    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
+    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
     let elem = document.getElementById(el.id+'-app');
     elem.style.zIndex = document.querySelectorAll('.window').length;
     //set cursor to appropriate one
@@ -149,8 +152,8 @@ function openApp(el, url=el.id) {
             }
             //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
             //if there are no fullscreen windows disable acrylic taskbar
-            if (document.querySelectorAll('.fullscreen').length < 1 && document.getElementById('taskbar').classList.contains('acrylic')) {
-                document.getElementById('taskbar').classList.remove('acrylic');
+            if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+                taskbar.classList.remove('acrylic');
             }
             //disable pointers events so dragging works better
             elem.lastChild.style.pointerEvents = 'none';
@@ -168,16 +171,16 @@ function openApp(el, url=el.id) {
     //handlers for buttons on app windows
     document.querySelector('#'+elem.id+' .close').addEventListener('click', () => {
         elem.remove(); //close window
-        if (document.querySelectorAll('.fullscreen').length < 1 && document.getElementById('taskbar').classList.contains('acrylic')) {
-            document.getElementById('taskbar').classList.remove('acrylic');
+        if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+            taskbar.classList.remove('acrylic');
         }
     });
     let storedBounds;
     document.querySelector('#'+elem.id+' .max').addEventListener('click', () => {
         if (elem.classList.contains('fullscreen')) {
             elem.classList.remove('fullscreen');
-            if (document.querySelectorAll('.fullscreen').length < 1 && document.getElementById('taskbar').classList.contains('acrylic')) {
-                document.getElementById('taskbar').classList.remove('acrylic');
+            if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+                taskbar.classList.remove('acrylic');
             }
             elem.style.left = storedBounds.left+'px';
             elem.style.top = storedBounds.top+'px';
@@ -186,7 +189,7 @@ function openApp(el, url=el.id) {
         } else {
             storedBounds = elem.getBoundingClientRect();
             elem.classList.add('fullscreen');
-            document.getElementById('taskbar').classList.add('acrylic');
+            taskbar.classList.add('acrylic');
             elem.style.left = 0;
             elem.style.top = 0;
             elem.style.width = document.body.getBoundingClientRect().width+'px';
@@ -244,7 +247,7 @@ document.body.addEventListener('mousedown', (event) => {
         if (event.button == 2 && event.target.classList[0] == 'icon') return;
         //if the click point was on the text of the right click menu return to prevent deselection
         let isRmenu = false;
-        document.querySelectorAll('#rclick p').forEach(el => {
+        document.querySelectorAll('#rclick p, #rclick div').forEach(el => {
             if (event.target == el) isRmenu = true;
         })
         if (isRmenu) return;
@@ -347,7 +350,61 @@ document.oncontextmenu = function(e) {
     if (e.target.classList[0] == 'icon') {
         //if icons are selected add more options to right click menu
         if (document.querySelectorAll('.selected').length > 0) {
-            rclick.insertAdjacentHTML('afterbegin', '<p id="deleteButton">Delete</p>');
+            rclick.insertAdjacentHTML('afterbegin', `
+                <div id="open"><b><p>Open</p></b></div>
+                <div id="print"><p>Print</p></div>
+                <div id="copyAsPath"><p>Copy as path</p></div>
+                <div id="share"><p>Share</p></div>
+                <div id="restore"><p>Restore previous versions</p></div>
+                <div></div>
+                <div id="sendTo"><p>Send to</p><p>></p></div>
+                <div></div>
+                <div id="cut"><p>Cut</p></div>
+                <div id="copy"><p>Copy</p></div>
+                <div></div>
+                <div id="createShortcut"><p>Create shortcut</p></div>
+                <div id="deleteButton"><p>Delete</p></div>
+                <div id="rename"><p>Rename</p></div>
+                <div></div>
+                <div id="properties"><p>Properties</p></div>
+            `);
+            /*document.getElementById('open').addEventListener('click', () => {
+                //open the app here
+                rclick.remove();
+            });
+            document.getElementById('print').addEventListener('click', () => {
+                //do something here not sure honestley
+                rclick.remove();
+            });*/
+            document.getElementById('copyAsPath').addEventListener('click', (click) => {
+                const port = location.port ? ':' + location.port : '';
+                navigator.clipboard.writeText('"'+location.hostname+port+'\\'+e.target.id+'.url"');
+                rclick.remove();
+            });
+            /*document.getElementById('share').addEventListener('click', () => {
+                //maybe open a share menu
+                rclick.remove();
+            });
+            document.getElementById('restore').addEventListener('click', () => {
+                //im probably not going to add this functionality
+                rclick.remove();
+            });
+            document.getElementById('sendTo').addEventListener('click', () => {
+                //do something here not sure yet
+                rclick.remove();
+            });
+            document.getElementById('cut').addEventListener('click', () => {
+                //cut here
+                rclick.remove();
+            });
+            document.getElementById('copy').addEventListener('click', () => {
+                //copy here
+                rclick.remove();
+            });
+            document.getElementById('createShortcut').addEventListener('click', () => {
+                //do something here not sure yet
+                rclick.remove();
+            });*/
             document.getElementById('deleteButton').addEventListener('click', () => {
                 document.querySelectorAll('.selected').forEach(el => {
                     el.remove();
@@ -357,19 +414,40 @@ document.oncontextmenu = function(e) {
         }
     }
     if (e.target.id == 'taskbar') {
-        rclick.insertAdjacentHTML('afterbegin', '<p>Task Manager</p><p>Taskbar Settings</p>');
-        //add the listener later
+        rclick.insertAdjacentHTML('afterbegin', '<div><p>Task Manager</p></div><div></div><div><p>Taskbar Settings</p></div>');
+        //add the listeners later
+    }
+    if (e.target == document.body) {
+        rclick.insertAdjacentHTML('afterbegin', `
+            <div id="view"><p>View</p><p>></p></div>
+            <div id="sort"><p>Sort by</p><p>></p></div>
+            <div id="refresh"><p>Refresh</p></div>
+            <div></div>
+            <div id="paste"><p>Paste</p></div>
+            <div></div>
+            <div id="new"><p>New</p></div>
+            <div></div>
+            <div id="displaySettings"><p>Display settings</p></div>
+            <div id="personalize"><p>Personalize</p></div>
+        `);
     }
     
     if (rclick.innerHTML !== '') {
         //prevent right click menu from going off the screen
-        if (e.x+284 > document.body.getBoundingClientRect().width) {
-            rclick.style.left = e.x-(e.x+284-document.body.getBoundingClientRect().width)+'px';
+        let bodyBounds = document.body.getBoundingClientRect();
+        if (e.x+284 > bodyBounds.width) {
+            rclick.style.left = e.x-(e.x+284-bodyBounds.width)+'px';
         } else {
             rclick.style.left = e.x+'px';
         }
-        if (e.y+rclick.getBoundingClientRect().height > document.body.getBoundingClientRect().height) {
-            rclick.style.top = e.y-rclick.getBoundingClientRect().height+'px';
+        let rclickBounds = rclick.getBoundingClientRect();
+        let taskbarBounds = taskbar.getBoundingClientRect();
+        if (e.y+rclickBounds.height > bodyBounds.height) {
+            if (e.y > taskbarBounds.height) {
+                rclick.style.top = taskbarBounds.top-rclickBounds.height+'px';
+            } else {
+                rclick.style.top = e.y-rclickBounds.height+'px';
+            }
         } else {
             rclick.style.top = e.y+'px';
         }
@@ -427,8 +505,8 @@ window.onmessage = function(e) {
         //keep checking if there is a resonse from the site every 5 milliseconds 
         checkRequest = setInterval(function() {
             if (response != undefined) {
-                document.getElementById('icons').insertAdjacentHTML('beforeend', '<div class="icon app" id="'+domain.split('.')[0]+'"><img src="'+image+'"/><p>'+title+'</p></div>');
-                createIcon(document.getElementById('icons').lastChild, url);
+                icons.insertAdjacentHTML('beforeend', '<div class="icon app" id="'+domain.split('.')[0]+'"><img src="'+image+'"/><p>'+title+'</p></div>');
+                createIcon(icons.lastChild, url);
                 clearInterval(checkRequest);
             }
         }), 5;
