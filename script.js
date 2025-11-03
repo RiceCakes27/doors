@@ -377,8 +377,8 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });*/
             document.getElementById('copyAsPath').addEventListener('click', (click) => {
-                const path = location.pathname.split('/')[0] ? '/' + location.pathname.split('/')[0] : '';
-                navigator.clipboard.writeText('"'+location.host+path+'\\'+e.target.id+'.url"');
+                const path = location.pathname.split('/')[1] ? '/' + location.pathname.split('/')[1] : '';
+                navigator.clipboard.writeText('"'+location.host+path+'/'+e.target.id+'.url"');
                 rclick.remove();
             });
             /*document.getElementById('share').addEventListener('click', () => {
