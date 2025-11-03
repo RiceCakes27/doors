@@ -239,6 +239,19 @@ document.querySelectorAll('.icon').forEach(el => {
     createIcon(el);
 });
 
+function createRclickSubmenu(content, rclick, button) {
+    document.body.insertAdjacentHTML('afterbegin', '<div id="rclick" class="sub">'+content+'</div>');
+    let sub = document.getElementsByClassName('sub')[0];
+    sub.style.top = button.getBoundingClientRect().top-3+"px";
+    const rclickBounds = rclick.getBoundingClientRect();
+    sub.style.left = rclickBounds.left+rclickBounds.width-2+"px";
+    const subBounds = sub.getBoundingClientRect();
+    if (subBounds.x + subBounds.width > document.body.getBoundingClientRect().width) {
+        sub.style.left = rclickBounds.left-subBounds.width+2+"px";
+    }
+    return sub;
+}
+
 document.body.addEventListener('mousedown', (event) => {
     //this deals with certain exceptions in regards to right clicking and i really hate it
     //if left or right click (no middle)
@@ -351,7 +364,7 @@ document.oncontextmenu = function(e) {
         //if icons are selected add more options to right click menu
         if (document.querySelectorAll('.selected').length > 0) {
             rclick.insertAdjacentHTML('afterbegin', `
-                <div id="open"><b><p>Open</p></b></div>
+                <div id="open"><p><b>Open</b></p></div>
                 <div id="print"><p>Print</p></div>
                 <div id="copyAsPath"><p>Copy as path</p></div>
                 <div id="share"><p>Share</p></div>
@@ -368,17 +381,17 @@ document.oncontextmenu = function(e) {
                 <div></div>
                 <div id="properties"><p>Properties</p></div>
             `);
-            /*document.getElementById('open').addEventListener('click', () => {
-                //open the app here
+            document.getElementById('open').addEventListener('click', () => {
+                openApp(e.target);
                 rclick.remove();
             });
-            document.getElementById('print').addEventListener('click', () => {
+            /*document.getElementById('print').addEventListener('click', () => {
                 //do something here not sure honestley
                 rclick.remove();
             });*/
-            document.getElementById('copyAsPath').addEventListener('click', (click) => {
+            document.getElementById('copyAsPath').addEventListener('click', () => {
                 const path = location.pathname.split('/')[1] ? '/' + location.pathname.split('/')[1] : '';
-                navigator.clipboard.writeText('"'+location.host+path+'/'+e.target.id+'.url"');
+                navigator.clipboard.writeText(location.host+path+'/?'+e.target.id+'.url');
                 rclick.remove();
             });
             /*document.getElementById('share').addEventListener('click', () => {
@@ -411,10 +424,23 @@ document.oncontextmenu = function(e) {
                 });
                 rclick.remove();
             });
+            /*document.getElementById('rename').addEventListener('click', () => {
+                //something like this idk yet
+                e.target.lastChild.contentEditable = "true"
+                rclick.remove();
+            });
+            document.getElementById('properties').addEventListener('click', () => {
+                //do something here mabye
+                rclick.remove();
+            });*/
         }
     }
     if (e.target.id == 'taskbar') {
-        rclick.insertAdjacentHTML('afterbegin', '<div><p>Task Manager</p></div><div></div><div><p>Taskbar Settings</p></div>');
+        rclick.insertAdjacentHTML('afterbegin', `
+            <div id="taskManager"><pre>&#61728</pre><p>Task Manager</p></div><div></div>
+            <div id="taskbarSettings"><pre>&#57621</pre><p>Taskbar Settings</p></div>
+        `);
+        rclick.classList.add('tbRclick');
         //add the listeners later
     }
     if (e.target == document.body) {
@@ -425,11 +451,65 @@ document.oncontextmenu = function(e) {
             <div></div>
             <div id="paste"><p>Paste</p></div>
             <div></div>
-            <div id="new"><p>New</p></div>
+            <div id="new"><p>New</p><p>></p></div>
             <div></div>
             <div id="displaySettings"><p>Display settings</p></div>
             <div id="personalize"><p>Personalize</p></div>
         `);
+        document.querySelectorAll("#rclick div").forEach((el) => {
+            el.addEventListener('mouseover', () => {
+                document.querySelectorAll('.sub').forEach((el) => {
+                    el.remove();
+                });
+            });
+        });
+        let view = document.getElementById('view');
+        view.addEventListener('mouseover', () => {
+            let sub = createRclickSubmenu(`
+                <div id="large"><p>Large icons</p></div>
+                <div id="medium"><p>Medium icons</p></div>
+                <div id="small"><pre>●</pre><p>Small icons</p></div>
+                <div></div>
+                <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
+                <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
+                <div></div>
+                <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
+            `, rclick, view);
+            document.getElementById('large').addEventListener('click', () => {
+                console.log('larg');
+            })
+            /*insert other listeners*/
+            let showIcons = document.getElementById('showIcons');
+            showIcons.addEventListener('click', () => {
+                icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
+                rclick.remove();
+                sub.remove();
+            })
+        });
+        let sort = document.getElementById('sort');
+        sort.addEventListener('mouseover', () => {
+            createRclickSubmenu(`
+                <div id="name"><p>Name</p></div>
+                <div id="size"><p>Size</p></div>
+                <div id="itemType"><p>Item type</p></div>
+                <div id="dateModfified"><p>Date modified</p></div>
+            `, rclick, sort);
+        });
+        document.getElementById('refresh').addEventListener('click', () => {
+            rclick.remove();
+        });
+        /*insert paste listener here*/
+        let newFile = document.getElementById('new');
+        newFile.addEventListener('mouseover', () => {
+            createRclickSubmenu(`
+                <div id="newFolder"><p>Folder</p></div>
+                <div id="newShortcut"><p>Shortcut</p></div>
+                <div></div>
+                <div id="newBmp"><p>Bitmap image</p></div>
+                <div id="newTxt"><p>Text Document</p></div>
+                <div id="newZip"><p>Compressed (zipped) Folder</p></div>
+            `, rclick, newFile);
+        });
     }
     
     if (rclick.innerHTML !== '') {
@@ -512,3 +592,11 @@ window.onmessage = function(e) {
         }), 5;
     }
 };
+//this should be improved later
+if (location.search) {
+    location.search.split('?').forEach((query) => {
+        if (query.split('.')[1] == 'url') {
+            openApp(document.getElementById(query.split('.')[0]))
+        }
+    })
+}

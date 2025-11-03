@@ -2,19 +2,24 @@
     font-family: 'Segoe UI';
     src: url(assets/SegoeUI.ttf) format('truetype');
 }
+@font-face {
+    font-family: 'Segoe Icons';
+    src: url(assets/SegoeIcons.ttf) format('truetype');
+}
 
 body {
     background-image: url(assets/mybg.png);
     background-size: cover;
     background-attachment: fixed;
     margin: 0;
+    height: 100vh;
 }
 
 body * {
     user-select: none;
 }
 
-p, button, input {
+p, pre, button, input {
     color: white;
     font-size: 12px;
     font-family: 'Segoe UI', sans-serif;
@@ -66,6 +71,10 @@ h5 {
     display: none;
     position: fixed;
 }
+.taskbar-icon > pre {
+    font-family: Segoe Icons;
+    font-size: medium;
+}
 .taskbar-icon:hover {
     background-color: rgba(97, 97, 97, 0.25);
 }
@@ -102,6 +111,10 @@ h5 {
 }
 #taskbar-icons .pressed {
     opacity: .8;
+}
+
+#sound {
+    margin-left: 10px;
 }
 
 #controls-button:active img, #clock-button:active p{
@@ -238,26 +251,59 @@ h5 {
     pointer-events: all;
     z-index: 98;
 }
+#rclick.sub {
+    width: 210px;
+    z-index: 99;
+}
 #rclick div {
-    width: 280px;
+    width: calc(100% - 4px);
     height: 20px;
     margin: 2px;
+    display: flex;
+    align-items: center;
 }
 #rclick div:hover {
-    background-color: #36383b;
+    background-color: rgba(97, 97, 97, 0.15);
     border-radius: 5px;
 }
 #rclick div p {
-    position:absolute;
+    position: absolute;
     display: inline;
     margin-left: 3em;
 }
-#rclick div :nth-child(2) {
+#rclick div pre {
+    display: inline;
+    position: absolute;
+    margin-left: 1.2em;
+    text-align: center;
+    font-family: "Segoe Icons";
+}
+#rclick div:has(> p:nth-of-type(2)) p:last-child {
     right: 10px;
 }
 #rclick div:empty {
     height: 1px;
     background-color: #36383b;
+}
+#rclick.tbRclick {
+    width: 160px;
+    background-color: rgba(97, 97, 97, 0.2);
+    backdrop-filter: blur(20px);
+    border-radius: 6px;
+    border-width: 0;
+}
+#rclick.tbRclick div:empty {
+    width: 100%;
+}
+#rclick.tbRclick p {
+    font-size: small;
+}
+#rclick.tbRclick div:not(:empty) {
+    height: 25px;
+}
+#rclick.tbRclick pre {
+    font-size: 14px;
+    margin-left: 0.9em;
 }
 
 .acrylic {
