@@ -260,7 +260,7 @@ document.body.addEventListener('mousedown', (event) => {
         if (event.button == 2 && event.target.classList[0] == 'icon') return;
         //if the click point was on the text of the right click menu return to prevent deselection
         let isRmenu = false;
-        document.querySelectorAll('#rclick').forEach(el => {
+        document.querySelectorAll('#rclick, #rclick div').forEach(el => {
             if (event.target == el) isRmenu = true;
         })
         if (isRmenu) return;
