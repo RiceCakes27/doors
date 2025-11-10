@@ -83,7 +83,7 @@ h5 {
     background-color: rgba(97, 97, 97, 0.25);
 }
 .taskbar-icon.active div:empty {
-    width: 40%;
+    width: 40% !important;
     background-color: #4cc2ff;
 }
 .taskbar-icon.open div:empty {
@@ -244,6 +244,7 @@ h5 {
 .window > p {
     margin-left: 5px;
     display: inline;
+    pointer-events: none;
 }
 .window iframe {
     width: 100%;

@@ -24,7 +24,6 @@ function createTaskbarButton(el) {
                 openApp(el);
             } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length == 1){
                 document.getElementById(el.id+'-app').style.display = document.getElementById(el.id+'-app').style.display == 'none' ? 'block' : 'none';
-                el.classList.contains('open') ? el.classList.remove('open') : el.classList.add('open');
                 el.classList.contains('active') ? el.classList.remove('active') : el.classList.add('active');
             } else if (event.button === 1) {
                 openApp(el);
@@ -97,21 +96,20 @@ function openApp(el, url=el.id) {
     let elem = document.getElementById(el.id+'-app');
     elem.style.zIndex = document.querySelectorAll('.window').length;
     let taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
-    if (taskbarIcon !== null) {
-        if (taskbarIcon.classList.contains('active')) {
-            //add visual for multiple windows
-        } else {
-            taskbarIcon.classList.add('active');
-        }
-    } else {
+    if (taskbarIcon === null) {
         taskbarApps.insertAdjacentHTML('beforeend', `
-            <div id="${el.id}" class="taskbar-icon app active" title-data="${appTitle}">
+            <div id="${el.id}" class="taskbar-icon app" title-data="${appTitle}">
                 <img src="apps/${el.id}.png" alt="${appTitle}"/>
                 <div></div>
             </div>
         `);
         taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
         createTaskbarButton(taskbarIcon);
+    }
+    if (taskbarIcon.classList.contains('active')) {
+        //add visual for multiple windows
+    } else {
+        taskbarIcon.classList.add('open','active');
     }
     //set cursor to appropriate one
     let relativeX, relativeY, borderSize = 5;
@@ -140,6 +138,10 @@ function openApp(el, url=el.id) {
     elem.addEventListener('mousedown', (e) => {
         let elemArea = elem.getBoundingClientRect();
         let y = relativeY, x = relativeX;
+        document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
+            icon.classList.remove('active');
+        });
+        !taskbarIcon.classList.contains('active') ? taskbarIcon.classList.add('active') : '';
         //window dragging
         function handleMouseMove(cursor) {
             if (dragging) {
@@ -253,7 +255,6 @@ function openApp(el, url=el.id) {
         elem.style.display = 'none';
         if (document.querySelectorAll('#'+elem.id).length <= 1) {
             taskbarIcon.classList.remove('active');
-            taskbarIcon.classList.add('open');
         }
     });
 }
@@ -313,6 +314,12 @@ function createRclickSubmenu(content, rclick, button) {
 }
 
 document.body.addEventListener('mousedown', (event) => {
+    //taskbar icon handler
+    if (!event.target.classList.contains('window') && !event.target.classList.contains('taskbar-icon')) {
+        document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
+            icon.classList.remove('active');
+        });
+    }
     //this deals with certain exceptions in regards to right clicking and i really hate it
     //if left or right click (no middle)
     if (event.button == 0 || event.button == 2) {
@@ -367,8 +374,9 @@ document.body.addEventListener('mousedown', (event) => {
             }
         });
     }
-    //if click was not middle mouse remove right click menu
+    //if click was not middle mouse
     if (event.button !== 1) {
+        //remove right click menu
         document.querySelectorAll('#rclick').forEach(el => {
             el.remove();
         });
