@@ -1,5 +1,6 @@
 const icons = document.getElementById('icons');
 const taskbar = document.getElementById('taskbar');
+const taskbarApps = document.getElementById('taskbar-apps');
 
 function updateClock() {
     let now = new Date();
@@ -11,62 +12,107 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-//handles animations and function for all buttons in taskbar
-document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #taskbar-icons div').forEach(el => {
+//handles animations and function for taskbar buttons
+function createTaskbarButton(el) {
     el.addEventListener('mousedown', () => {
         el.classList.add('pressed');
     });
-    el.addEventListener('mouseup', (event) => {
-        if (event.button === 0) {
-            switch(el.className.split(' ')[1]) {
-                case 'app':
-                    openApp(el);
-                    break;
-                case 'popup':
-                    let openMenu = true;
-                    document.querySelectorAll('.menu').forEach(menu => {
-                        menu.remove();
-                        document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
-                        if (menu.id.split('-')[0] == el.id.split('-')[0]) {
-                            openMenu = false;
-                        }
-                    });
-                    if (openMenu) {
-                        el.classList.add('active');
-                        if (el.parentElement.id == 'taskbar') {
-                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu left"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input/></div></div>');
-                            let menu = document.getElementById(el.id.split('-')[0]+'-menu');
-                            switch(el.id) {
-                                case 'start-button':
-                                    menu.firstChild.children[1].placeholder = 'Search for apps, settings, and documents';
-                                    menu.insertAdjacentHTML('beforeend', '<h5>Pinned</h5><div class="button"><p>All ></p></div>');
-                                    break;
-                                case 'search-button':
-                                    menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
-                                    break;
-                            }
-                        }
-                        if (el.parentElement.id == 'taskbar-icons') {
-                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right"><div/>');
-                            let menu = document.getElementById(el.id.split('-')[0]+'-menu');
-                            switch(el.id) {
-                                case 'controls-button':
-                                    break;
-                                case 'clock-button':
-                                    break;
-                            }
+    switch(el.className.split(' ')[1]) {
+    case 'app':
+        el.addEventListener('mouseup', (event) => {
+            if ((event.button === 0 || event.button === 1) && document.querySelectorAll('#'+el.id+'-app').length == 0) {
+                openApp(el);
+            } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length == 1){
+                document.getElementById(el.id+'-app').style.display = document.getElementById(el.id+'-app').style.display == 'none' ? 'block' : 'none';
+                el.classList.contains('open') ? el.classList.remove('open') : el.classList.add('open');
+                el.classList.contains('active') ? el.classList.remove('active') : el.classList.add('active');
+            } else if (event.button === 1) {
+                openApp(el);
+            }
+            //will need to make a menu for when theres multiple windows
+        });
+        break;
+    case 'popup':
+        el.addEventListener('mouseup', (event) => {
+            if (event.button === 0) {
+                let openMenu = true;
+                document.querySelectorAll('.menu').forEach(menu => {
+                    menu.remove();
+                    document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
+                    if (menu.id.split('-')[0] == el.id.split('-')[0]) {
+                        openMenu = false;
+                    }
+                });
+                if (openMenu) {
+                    el.classList.add('active');
+                    if (el.parentElement.id == 'taskbar') {
+                        document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu left acrylic"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input/></div></div>');
+                        let menu = document.getElementById(el.id.split('-')[0]+'-menu');
+                        menu.firstChild.children[1].focus();
+                        switch(el.id) {
+                            case 'start-button':
+                                menu.firstChild.children[1].placeholder = 'Search for apps, settings, and documents';
+                                menu.insertAdjacentHTML('beforeend', `
+                                    <div>
+                                        <h5>Pinned</h5>
+                                        <div id="allButton" class="button acrylic">
+                                            <p>All ></p>
+                                        </div>
+                                    </div>
+                                    <div id="pinnedApps">
+                                        <!--things will go here-->
+                                    </div>
+                                `);
+                                break;
+                            case 'search-button':
+                                menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
+                                break;
                         }
                     }
-                break;
+                    if (el.parentElement.id == 'taskbar-icons') {
+                        document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right acrylic"><div/>');
+                        let menu = document.getElementById(el.id.split('-')[0]+'-menu');
+                        switch(el.id) {
+                            case 'controls-button':
+                                break;
+                            case 'clock-button':
+                                break;
+                        }
+                    }
+                }
             }
-        }
-    });
+        });
+        break;
+    }
+}
+//add listeners to initial taskbar icons
+document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #taskbar-icons div').forEach(el => {
+    createTaskbarButton(el);
 });
+
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
-    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+el.children[1].textContent+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
+    const appTitle = el.getAttribute('title-data');
+    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+appTitle+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
     let elem = document.getElementById(el.id+'-app');
     elem.style.zIndex = document.querySelectorAll('.window').length;
+    let taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
+    if (taskbarIcon !== null) {
+        if (taskbarIcon.classList.contains('active')) {
+            //add visual for multiple windows
+        } else {
+            taskbarIcon.classList.add('active');
+        }
+    } else {
+        taskbarApps.insertAdjacentHTML('beforeend', `
+            <div id="${el.id}" class="taskbar-icon app active" title-data="${appTitle}">
+                <img src="apps/${el.id}.png" alt="${appTitle}"/>
+                <div></div>
+            </div>
+        `);
+        taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
+        createTaskbarButton(taskbarIcon);
+    }
     //set cursor to appropriate one
     let relativeX, relativeY, borderSize = 5;
     elem.onmousemove = function(e) {
@@ -171,6 +217,13 @@ function openApp(el, url=el.id) {
     //handlers for buttons on app windows
     document.querySelector('#'+elem.id+' .close').addEventListener('click', () => {
         elem.remove(); //close window
+        if (document.querySelectorAll('#'+elem.id).length <= 0) {
+            if (taskbarIcon.classList.contains('pinned')) {
+                taskbarIcon.classList.remove('active', 'open');
+            } else {
+                taskbarIcon.remove();
+            }
+        }
         if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
             taskbar.classList.remove('acrylic');
         }
@@ -194,6 +247,13 @@ function openApp(el, url=el.id) {
             elem.style.top = 0;
             elem.style.width = document.body.getBoundingClientRect().width+'px';
             elem.style.height = document.body.getBoundingClientRect().height+'px';
+        }
+    });
+    document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
+        elem.style.display = 'none';
+        if (document.querySelectorAll('#'+elem.id).length <= 1) {
+            taskbarIcon.classList.remove('active');
+            taskbarIcon.classList.add('open');
         }
     });
 }
@@ -437,10 +497,11 @@ document.oncontextmenu = function(e) {
     }
     if (e.target.id == 'taskbar') {
         rclick.insertAdjacentHTML('afterbegin', `
-            <div id="taskManager"><pre>&#61728</pre><p>Task Manager</p></div><div></div>
+            <div id="taskManager"><pre>&#61728</pre><p>Task Manager</p></div>
+            <div></div>
             <div id="taskbarSettings"><pre>&#57621</pre><p>Taskbar Settings</p></div>
         `);
-        rclick.classList.add('tbRclick');
+        rclick.classList.add('tbRclick','acrylic');
         //add the listeners later
     }
     if (e.target == document.body) {
@@ -510,6 +571,13 @@ document.oncontextmenu = function(e) {
                 <div id="newZip"><p>Compressed (zipped) Folder</p></div>
             `, rclick, newFile);
         });
+    }
+    if (e.target.id == 'start-menu') {
+        rclick.insertAdjacentHTML('afterbegin', `
+            <div id="startSettings"><pre>&#57621</pre><p>Start Settings</p></div>
+        `);
+        rclick.classList.add('tbRclick','acrylic');
+        //add the listeners later
     }
     
     if (rclick.innerHTML !== '') {
