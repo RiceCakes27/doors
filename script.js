@@ -304,18 +304,16 @@ document.querySelectorAll('.icon').forEach(el => {
 });
 
 function createRclickSubmenu(content, rclick, button) {
-    setTimeout(() => {
-        document.body.insertAdjacentHTML('afterbegin', '<div id="rclick" class="sub">'+content+'</div>');
-        let sub = document.getElementsByClassName('sub')[0];
-        sub.style.top = button.getBoundingClientRect().top-3+"px";
-        const rclickBounds = rclick.getBoundingClientRect();
-        sub.style.left = rclickBounds.left+rclickBounds.width-2+"px";
-        const subBounds = sub.getBoundingClientRect();
-        if (subBounds.x + subBounds.width > document.body.getBoundingClientRect().width) {
-            sub.style.left = rclickBounds.left-subBounds.width+2+"px";
-        }
-        return sub; 
-    }, 500);
+    document.body.insertAdjacentHTML('afterbegin', '<div id="rclick" class="sub">'+content+'</div>');
+    let sub = document.getElementsByClassName('sub')[0];
+    sub.style.top = button.getBoundingClientRect().top-3+"px";
+    const rclickBounds = rclick.getBoundingClientRect();
+    sub.style.left = rclickBounds.left+rclickBounds.width-2+"px";
+    const subBounds = sub.getBoundingClientRect();
+    if (subBounds.x + subBounds.width > document.body.getBoundingClientRect().width) {
+        sub.style.left = rclickBounds.left-subBounds.width+2+"px";
+    }
+    return sub;
 }
 
 document.body.addEventListener('mousedown', (event) => {
@@ -563,17 +561,17 @@ document.oncontextmenu = function(e) {
         });
         let view = document.getElementById('view');
         view.addEventListener('mouseover', () => {
-            let sub = createRclickSubmenu(`
-                <div id="large">${icons.classList.contains('large') ? '<pre>●</pre>' : ''}<p>Large icons</p></div>
-                <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
-                <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
-                <div></div>
-                <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
-                <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
-                <div></div>
-                <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
-            `, rclick, view);
-            if (sub !== undefined) {
+            setTimeout(() => {
+                let sub = createRclickSubmenu(`
+                    <div id="large">${icons.classList.contains('large') ? '<pre>●</pre>' : ''}<p>Large icons</p></div>
+                    <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
+                    <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
+                    <div></div>
+                    <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
+                    <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
+                    <div></div>
+                    <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
+                `, rclick, view);
                 function setIconSize(click) {
                     icons.className = click.target.id;
                     rclick.remove();
@@ -588,21 +586,20 @@ document.oncontextmenu = function(e) {
                     icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
                     rclick.remove();
                     sub.remove();
-                });
-            }
-
+                });      
+            }, 500);
         });
         let sort = document.getElementById('sort');
         sort.addEventListener('mouseover', () => {
-            let sub = createRclickSubmenu(`
-                <div id="name"><p>Name</p></div>
-                <div id="size"><p>Size</p></div>
-                <div id="itemType"><p>Item type</p></div>
-                <div id="dateModfified"><p>Date modified</p></div>
-            `, rclick, sort);
-            if (sub !== undefined) {
-                /*insert listeners here*/
-            }
+            setTimeout(() => {
+                let sub = createRclickSubmenu(`
+                    <div id="name"><p>Name</p></div>
+                    <div id="size"><p>Size</p></div>
+                    <div id="itemType"><p>Item type</p></div>
+                    <div id="dateModfified"><p>Date modified</p></div>
+                `, rclick, sort);
+                /*insert listeners here*/            
+            }, 500);
         });
         document.getElementById('refresh').addEventListener('click', () => {
             rclick.remove();
@@ -610,25 +607,26 @@ document.oncontextmenu = function(e) {
         /*insert paste listener here*/
         let newFile = document.getElementById('new');
         newFile.addEventListener('mouseover', () => {
-            let sub = createRclickSubmenu(`
-                <div id="newFolder"><p>Folder</p></div>
-                <div id="newShortcut"><p>Shortcut</p></div>
-                <div></div>
-                <div id="newBmp"><p>Bitmap image</p></div>
-                <div id="newTxt"><p>Text Document</p></div>
-                <div id="newZip"><p>Compressed (zipped) Folder</p></div>
-            `, rclick, newFile);
-            if (sub !== undefined) {
+            setTimeout(() => {
+                let sub = createRclickSubmenu(`
+                    <div id="newFolder"><p>Folder</p></div>
+                    <div id="newShortcut"><p>Shortcut</p></div>
+                    <div></div>
+                    <div id="newBmp"><p>Bitmap image</p></div>
+                    <div id="newTxt"><p>Text Document</p></div>
+                    <div id="newZip"><p>Compressed (zipped) Folder</p></div>
+                `, rclick, newFile);
                 /*insert listeners here*/
-            }
+            }, 500);
         });
+        /*insert more listeners here*/  
     }
     if (e.target.id == 'start-menu') {
         rclick.insertAdjacentHTML('afterbegin', `
             <div id="startSettings"><pre>&#57621</pre><p>Start Settings</p></div>
         `);
         rclick.classList.add('tbRclick','acrylic');
-        //add the listeners later
+        /*insert listeners here*/
     }
     
     if (rclick.innerHTML !== '') {

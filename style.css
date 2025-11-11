@@ -219,6 +219,7 @@ h5 {
     -webkit-box-orient: vertical;
     display: -webkit-box;
     overflow: hidden;
+    word-break: break-all;
 }
 .icon:hover {
     background-color: rgba(97, 97, 97, 0.25);
