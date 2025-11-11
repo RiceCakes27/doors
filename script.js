@@ -1,6 +1,6 @@
+const desktop = document.getElementById('desktop');
 const icons = document.getElementById('icons');
 const taskbar = document.getElementById('taskbar');
-const taskbarApps = document.getElementById('taskbar-apps');
 
 function updateClock() {
     let now = new Date();
@@ -97,7 +97,7 @@ function openApp(el, url=el.id) {
     elem.style.zIndex = document.querySelectorAll('.window').length;
     let taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
     if (taskbarIcon === null) {
-        taskbarApps.insertAdjacentHTML('beforeend', `
+        document.getElementById('taskbar-apps').insertAdjacentHTML('beforeend', `
             <div id="${el.id}" class="taskbar-icon app" title-data="${appTitle}">
                 <img src="apps/${el.id}.png" alt="${appTitle}"/>
                 <div></div>
@@ -109,7 +109,10 @@ function openApp(el, url=el.id) {
     if (taskbarIcon.classList.contains('active')) {
         //add visual for multiple windows
     } else {
-        taskbarIcon.classList.add('open','active');
+        //set timeout lets the animation play, there are likely better solutions
+        setTimeout(() => {
+            taskbarIcon.classList.add('open','active');
+        },0);
     }
     //set cursor to appropriate one
     let relativeX, relativeY, borderSize = 5;
@@ -262,7 +265,7 @@ function openApp(el, url=el.id) {
 function createIcon(el, url) {
     let clicks = 0;
     let timeout;
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (click) => {
         clicks++;
         let oldclicks = clicks;
         timeout = setTimeout(function() {
@@ -280,7 +283,7 @@ function createIcon(el, url) {
             el.classList.add('selected');
         }
         //if double click reset timer so double click is required every time to open app
-        if (clicks == 2) {
+        if (clicks == 2 && click.target.nodeName !== "TEXTAREA") {
             clicks = 0;
             clearTimeout(timeout);
             switch(el.className.split(' ')[1]) {
@@ -301,16 +304,18 @@ document.querySelectorAll('.icon').forEach(el => {
 });
 
 function createRclickSubmenu(content, rclick, button) {
-    document.body.insertAdjacentHTML('afterbegin', '<div id="rclick" class="sub">'+content+'</div>');
-    let sub = document.getElementsByClassName('sub')[0];
-    sub.style.top = button.getBoundingClientRect().top-3+"px";
-    const rclickBounds = rclick.getBoundingClientRect();
-    sub.style.left = rclickBounds.left+rclickBounds.width-2+"px";
-    const subBounds = sub.getBoundingClientRect();
-    if (subBounds.x + subBounds.width > document.body.getBoundingClientRect().width) {
-        sub.style.left = rclickBounds.left-subBounds.width+2+"px";
-    }
-    return sub;
+    setTimeout(() => {
+        document.body.insertAdjacentHTML('afterbegin', '<div id="rclick" class="sub">'+content+'</div>');
+        let sub = document.getElementsByClassName('sub')[0];
+        sub.style.top = button.getBoundingClientRect().top-3+"px";
+        const rclickBounds = rclick.getBoundingClientRect();
+        sub.style.left = rclickBounds.left+rclickBounds.width-2+"px";
+        const subBounds = sub.getBoundingClientRect();
+        if (subBounds.x + subBounds.width > document.body.getBoundingClientRect().width) {
+            sub.style.left = rclickBounds.left-subBounds.width+2+"px";
+        }
+        return sub; 
+    }, 500);
 }
 
 document.body.addEventListener('mousedown', (event) => {
@@ -325,7 +330,7 @@ document.body.addEventListener('mousedown', (event) => {
     if (event.button == 0 || event.button == 2) {
         //if right clicking on icon prevent it from being deselected
         if (event.button == 2 && event.target.classList[0] == 'icon') return;
-        //if the click point was on the text of the right click menu return to prevent deselection
+        //if the click point was on the right click menu return to prevent deselection
         let isRmenu = false;
         document.querySelectorAll('#rclick, #rclick div').forEach(el => {
             if (event.target == el) isRmenu = true;
@@ -375,13 +380,13 @@ document.body.addEventListener('mousedown', (event) => {
         });
     }
     //if click was not middle mouse
-    if (event.button !== 1) {
+    if (event.button === 0 || event.button === 2) {
         //remove right click menu
         document.querySelectorAll('#rclick').forEach(el => {
             el.remove();
         });
         //if click was on body and not middle mouse
-        if (event.target == document.body) {
+        if (event.target == desktop) {
             //creating the box every time is dumb, would love to fix if i knew how
             document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
             let box = document.getElementById('box')
@@ -492,12 +497,34 @@ document.oncontextmenu = function(e) {
                 });
                 rclick.remove();
             });
-            /*document.getElementById('rename').addEventListener('click', () => {
-                //something like this idk yet
-                e.target.lastChild.contentEditable = "true"
+            document.getElementById('rename').addEventListener('click', () => {
+                e.target.insertAdjacentHTML('beforeend', `<textarea maxlength="228">${e.target.children[1].textContent}</textarea>`);
+                e.target.children[1].remove();
+                let textinput = e.target.children[1];
+                textinput.select();
+                function resize() {
+                    textinput.style.height = '1em';
+                    textinput.style.height = textinput.scrollHeight + "px";
+                    //dont know how to make the width shrink currently
+                    //textinput.style.width = '6ch';
+                    //console.log(textinput.scrollWidth);
+                    //textinput.style.width = textinput.scrollWidth + "px";
+                };
+                resize();
+                textinput.addEventListener('input', resize);
+                textinput.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        e.target.insertAdjacentHTML('beforeend', `<p>${textinput.value.trim().length > 0 ? textinput.value : textinput.innerHTML}</p>`);
+                        textinput.remove();
+                    }
+                })
+                textinput.addEventListener('focusout', () => {
+                    e.target.insertAdjacentHTML('beforeend', `<p>${textinput.value}</p>`);
+                    textinput.remove();
+                });
                 rclick.remove();
             });
-            document.getElementById('properties').addEventListener('click', () => {
+            /*document.getElementById('properties').addEventListener('click', () => {
                 //do something here mabye
                 rclick.remove();
             });*/
@@ -512,7 +539,7 @@ document.oncontextmenu = function(e) {
         rclick.classList.add('tbRclick','acrylic');
         //add the listeners later
     }
-    if (e.target == document.body) {
+    if (e.target == desktop) {
         rclick.insertAdjacentHTML('afterbegin', `
             <div id="view"><p>View</p><p>></p></div>
             <div id="sort"><p>Sort by</p><p>></p></div>
@@ -528,41 +555,54 @@ document.oncontextmenu = function(e) {
         document.querySelectorAll("#rclick div").forEach((el) => {
             el.addEventListener('mouseover', () => {
                 document.querySelectorAll('.sub').forEach((el) => {
-                    el.remove();
+                    setTimeout(() => {
+                        el.remove();
+                    }, 500);
                 });
             });
         });
         let view = document.getElementById('view');
         view.addEventListener('mouseover', () => {
             let sub = createRclickSubmenu(`
-                <div id="large"><p>Large icons</p></div>
-                <div id="medium"><p>Medium icons</p></div>
-                <div id="small"><pre>●</pre><p>Small icons</p></div>
+                <div id="large">${icons.classList.contains('large') ? '<pre>●</pre>' : ''}<p>Large icons</p></div>
+                <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
+                <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
                 <div></div>
                 <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
                 <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
                 <div></div>
                 <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
             `, rclick, view);
-            document.getElementById('large').addEventListener('click', () => {
-                console.log('larg');
-            })
-            /*insert other listeners*/
-            let showIcons = document.getElementById('showIcons');
-            showIcons.addEventListener('click', () => {
-                icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
-                rclick.remove();
-                sub.remove();
-            })
+            if (sub !== undefined) {
+                function setIconSize(click) {
+                    icons.className = click.target.id;
+                    rclick.remove();
+                    sub.remove();
+                }
+                document.getElementById('large').addEventListener('click', setIconSize);
+                document.getElementById('medium').addEventListener('click', setIconSize);
+                document.getElementById('small').addEventListener('click', setIconSize);
+                /*insert other listeners*/
+                let showIcons = document.getElementById('showIcons');
+                showIcons.addEventListener('click', () => {
+                    icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
+                    rclick.remove();
+                    sub.remove();
+                });
+            }
+
         });
         let sort = document.getElementById('sort');
         sort.addEventListener('mouseover', () => {
-            createRclickSubmenu(`
+            let sub = createRclickSubmenu(`
                 <div id="name"><p>Name</p></div>
                 <div id="size"><p>Size</p></div>
                 <div id="itemType"><p>Item type</p></div>
                 <div id="dateModfified"><p>Date modified</p></div>
             `, rclick, sort);
+            if (sub !== undefined) {
+                /*insert listeners here*/
+            }
         });
         document.getElementById('refresh').addEventListener('click', () => {
             rclick.remove();
@@ -570,7 +610,7 @@ document.oncontextmenu = function(e) {
         /*insert paste listener here*/
         let newFile = document.getElementById('new');
         newFile.addEventListener('mouseover', () => {
-            createRclickSubmenu(`
+            let sub = createRclickSubmenu(`
                 <div id="newFolder"><p>Folder</p></div>
                 <div id="newShortcut"><p>Shortcut</p></div>
                 <div></div>
@@ -578,6 +618,9 @@ document.oncontextmenu = function(e) {
                 <div id="newTxt"><p>Text Document</p></div>
                 <div id="newZip"><p>Compressed (zipped) Folder</p></div>
             `, rclick, newFile);
+            if (sub !== undefined) {
+                /*insert listeners here*/
+            }
         });
     }
     if (e.target.id == 'start-menu') {
@@ -661,7 +704,7 @@ window.onmessage = function(e) {
         //keep checking if there is a resonse from the site every 5 milliseconds 
         checkRequest = setInterval(function() {
             if (response != undefined) {
-                icons.insertAdjacentHTML('beforeend', '<div class="icon app" id="'+domain.split('.')[0]+'"><img src="'+image+'"/><p>'+title+'</p></div>');
+                icons.insertAdjacentHTML('beforeend', '<div class="icon app" id="'+domain.split('.')[0]+'" title-data="'+title+'"><img src="'+image+'"/><p>'+title+'</p></div>');
                 createIcon(icons.lastChild, url);
                 clearInterval(checkRequest);
             }
