@@ -560,45 +560,61 @@ document.oncontextmenu = function(e) {
             });
         });
         let view = document.getElementById('view');
-        view.addEventListener('mouseover', () => {
+        view.addEventListener('mouseenter', () => {
+            let isStillHoverd = true;
+            function mouseleave() {
+                isStillHoverd = false;
+                view.removeEventListener('mouseleave', mouseleave);
+            }
+            view.addEventListener('mouseleave', mouseleave);
             setTimeout(() => {
-                let sub = createRclickSubmenu(`
-                    <div id="large">${icons.classList.contains('large') ? '<pre>●</pre>' : ''}<p>Large icons</p></div>
-                    <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
-                    <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
-                    <div></div>
-                    <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
-                    <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
-                    <div></div>
-                    <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
-                `, rclick, view);
-                function setIconSize(click) {
-                    icons.className = click.target.id;
-                    rclick.remove();
-                    sub.remove();
+                if (isStillHoverd) {
+                    let sub = createRclickSubmenu(`
+                        <div id="large">${icons.classList.contains('large') ? '<pre>●</pre>' : ''}<p>Large icons</p></div>
+                        <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
+                        <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
+                        <div></div>
+                        <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
+                        <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
+                        <div></div>
+                        <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
+                    `, rclick, view);
+                    function setIconSize(click) {
+                        icons.className = click.target.id;
+                        rclick.remove();
+                        sub.remove();
+                    }
+                    document.getElementById('large').addEventListener('click', setIconSize);
+                    document.getElementById('medium').addEventListener('click', setIconSize);
+                    document.getElementById('small').addEventListener('click', setIconSize);
+                    /*insert other listeners*/
+                    let showIcons = document.getElementById('showIcons');
+                    showIcons.addEventListener('click', () => {
+                        icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
+                        rclick.remove();
+                        sub.remove();
+                    });
                 }
-                document.getElementById('large').addEventListener('click', setIconSize);
-                document.getElementById('medium').addEventListener('click', setIconSize);
-                document.getElementById('small').addEventListener('click', setIconSize);
-                /*insert other listeners*/
-                let showIcons = document.getElementById('showIcons');
-                showIcons.addEventListener('click', () => {
-                    icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
-                    rclick.remove();
-                    sub.remove();
-                });      
             }, 500);
         });
         let sort = document.getElementById('sort');
-        sort.addEventListener('mouseover', () => {
+        sort.addEventListener('mouseenter', () => {
+            let isStillHoverd = true;
+            function mouseleave() {
+                isStillHoverd = false;
+                sort.removeEventListener('mouseleave', mouseleave);
+            }
+            sort.addEventListener('mouseleave', mouseleave);
             setTimeout(() => {
-                let sub = createRclickSubmenu(`
-                    <div id="name"><p>Name</p></div>
-                    <div id="size"><p>Size</p></div>
-                    <div id="itemType"><p>Item type</p></div>
-                    <div id="dateModfified"><p>Date modified</p></div>
-                `, rclick, sort);
-                /*insert listeners here*/            
+                if (isStillHoverd) {
+                    let sub = createRclickSubmenu(`
+                        <div id="name"><p>Name</p></div>
+                        <div id="size"><p>Size</p></div>
+                        <div id="itemType"><p>Item type</p></div>
+                        <div id="dateModfified"><p>Date modified</p></div>
+                    `, rclick, sort);
+                    /*insert listeners here*/
+                }
             }, 500);
         });
         document.getElementById('refresh').addEventListener('click', () => {
@@ -607,16 +623,24 @@ document.oncontextmenu = function(e) {
         /*insert paste listener here*/
         let newFile = document.getElementById('new');
         newFile.addEventListener('mouseover', () => {
+            let isStillHoverd = true;
+            function mouseleave() {
+                isStillHoverd = false;
+                newFile.removeEventListener('mouseleave', mouseleave);
+            }
+            newFile.addEventListener('mouseleave', mouseleave);
             setTimeout(() => {
-                let sub = createRclickSubmenu(`
-                    <div id="newFolder"><p>Folder</p></div>
-                    <div id="newShortcut"><p>Shortcut</p></div>
-                    <div></div>
-                    <div id="newBmp"><p>Bitmap image</p></div>
-                    <div id="newTxt"><p>Text Document</p></div>
-                    <div id="newZip"><p>Compressed (zipped) Folder</p></div>
-                `, rclick, newFile);
-                /*insert listeners here*/
+                if (isStillHoverd) {
+                    let sub = createRclickSubmenu(`
+                        <div id="newFolder"><p>Folder</p></div>
+                        <div id="newShortcut"><p>Shortcut</p></div>
+                        <div></div>
+                        <div id="newBmp"><p>Bitmap image</p></div>
+                        <div id="newTxt"><p>Text Document</p></div>
+                        <div id="newZip"><p>Compressed (zipped) Folder</p></div>
+                    `, rclick, newFile);
+                    /*insert listeners here*/
+                }
             }, 500);
         });
         /*insert more listeners here*/  
