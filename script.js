@@ -146,6 +146,41 @@ document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #ta
     createTaskbarButton(el);
 });
 
+async function createUserIcon(split) {
+    let responseText, image, title;
+
+    //make sure split has http(s)://
+    let url = split;
+    if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+    }
+    //get domain from url
+    let domainMatch = url.match(/^https?:\/\/([^\/]+)/i);
+    let domain = domainMatch ? domainMatch[1] : url;
+
+    //see if site allows connections
+    try {
+        const response = await fetch(url, { mode: 'cors' });
+        if (!response.ok) throw new Error("Bad response");
+        responseText = await response.text();
+
+        image = `https://${domain}/favicon.ico`;
+
+        // Extract title
+        const match = responseText.match(/<title>([^<]*)<\/title>/i);
+        title = match ? match[1] : split;
+    } catch (err) {
+        // If site cannot be fetched
+        image = 'assets/noicon.png';
+        title = split;
+    }
+
+    icons.insertAdjacentHTML('beforeend', `<div class="icon app user-created" id="${domain.split('.')[0]}" title-data="${title}" url="${url}"><img src="${image}"/><p>${title}</p></div>`);
+    let icon = icons.lastChild;
+    createIcon(icon, url);
+    return icon;
+}
+
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
     const appTitle = el.getAttribute('title-data');
@@ -530,7 +565,8 @@ document.oncontextmenu = function(e) {
             });*/
             document.getElementById('copyAsPath').addEventListener('click', () => {
                 const path = location.pathname.split('/')[1] ? '/' + location.pathname.split('/')[1] : '';
-                navigator.clipboard.writeText(location.host+path+'/?'+e.target.id+'.url');
+                const url = e.target.getAttribute('url');
+                navigator.clipboard.writeText(`${location.host+path}/?${url !== null ? url.split('://')[url.split('://').length - 1] : e.target.id+'.url'}`);
                 rclick.remove();
             });
             /*document.getElementById('share').addEventListener('click', () => {
@@ -725,52 +761,7 @@ window.onmessage = function(e) {
     }
     switch(split[0]) {
         case 'makeIcon':
-            let response;
-            let image;
-            let title;
-
-            //make sure split[1] has http(s)://
-            let url = split[1];
-            if (!/^https?:\/\//i.test(url)) {
-                url = 'https://' + url;
-            }
-
-            //get domain from url
-            let domainMatch = url.match(/^https?:\/\/([^\/]+)/i);
-            let domain = domainMatch ? domainMatch[1] : url;
-
-            //see if site allows connections
-            let request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (this.readyState === 4) {
-                    if (this.status === 200) {
-                        response = this.responseText;
-
-                        //get icon from domain
-                        image = 'https://' + domain + '/favicon.ico';
-
-                        //get title from html
-                        let match = response.match(/<title>([^<]*)<\/title>/i);
-                        title = match ? match[1] : split[1];
-                    }  else {
-                        response = false;
-                        image = 'assets/noicon.png';
-                        title = split[1];
-                    }
-                }
-            };
-            request.open("GET", url, true);
-            request.send(null);
-
-            let checkRequest;
-            //keep checking if there is a resonse from the site every 5 milliseconds 
-            checkRequest = setInterval(function() {
-                if (response != undefined) {
-                    icons.insertAdjacentHTML('beforeend', `<div class="icon app user-created" id="${domain.split('.')[0]}" title-data="${title}" url="${url}"><img src="${image}"/><p>${title}</p></div>`);
-                    createIcon(icons.lastChild, url);
-                    clearInterval(checkRequest);
-                }
-            }), 5;
+            createUserIcon(split[1]);
         break;
         case 'save':
             const styles = {};
@@ -809,8 +800,15 @@ window.onmessage = function(e) {
 //this should be improved later
 if (location.search) {
     location.search.split('?').forEach((query) => {
-        if (query.split('.')[1] == 'url') {
-            openApp(document.getElementById(query.split('.')[0]));
+        if (query) {
+            if (query.split('.')[1] == 'url') {
+                openApp(document.getElementById(query.split('.')[0]));
+            } else {
+                (async () => {
+                    const app = await createUserIcon(query);
+                    openApp(app, app.getAttribute('url'));
+                })();
+            }
         }
     })
 }
