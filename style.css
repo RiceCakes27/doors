@@ -12,7 +12,7 @@ body {
     background-size: cover;
     background-attachment: fixed;
     margin: 0;
-    height: 100vh;
+    height: calc(100vh - 48px)
 }
 body * {
     user-select: none;
@@ -219,7 +219,7 @@ h5 {
     -webkit-box-orient: vertical;
     display: -webkit-box;
     overflow: hidden;
-    word-break: break-all;
+    overflow-wrap: break-word;
 }
 .icon:hover {
     background-color: rgba(97, 97, 97, 0.25);
@@ -244,9 +244,6 @@ h5 {
     outline: none;
     overflow: hidden;
     padding: 0 1px;
-}
-.icon:has(textarea) {
-    background-color: transparent;
 }
 
 .selected {
@@ -467,7 +464,19 @@ h5 {
 #pinnedApps {
     display: flex;
     flex-direction: row;
-    margin: 0 60px 0 60px;
+    margin: 0 30px;
+}
+#pinnedApps .icon {
+    width: 90px;
+    height: 80px;
+}
+#pinnedApps .icon:hover {
+    background-color: rgba(97, 97, 97, 0.18);
+}
+#pinnedApps .icon img {
+    width: 35%;
+    margin-bottom: 5px;
+    margin-top: 10px;
 }
 
 .search-bar {

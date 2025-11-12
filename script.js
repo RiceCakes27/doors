@@ -12,75 +12,132 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
+//restore saved stuff
+const styles = JSON.parse(localStorage.getItem('savedStyles') || '{}');
+const classes = JSON.parse(localStorage.getItem('savedClasses') || '{}');
+const userCreated = JSON.parse(localStorage.getItem('savedUserCreated') || '[]');
+
+// Restore styles
+for (const [path, style] of Object.entries(styles)) {
+    const el = document.querySelector(path);
+    if (el) el.setAttribute('style', style);
+}
+
+// Restore classes
+for (const [path, className] of Object.entries(classes)) {
+    const el = document.querySelector(path);
+    if (el) el.className = className;
+}
+
+// Restore user-created elements
+userCreated.forEach(item => {
+    const parentPath = item.path.split(' > ').slice(0, -1).join(' > ');
+    const parent = document.querySelector(parentPath) || document.body;
+    const temp = document.createElement('div');
+    temp.innerHTML = item.outerHTML;
+    parent.appendChild(temp.firstElementChild);
+});
+
+function getElementPath(el) {
+    if (el === document.body) return 'body';
+
+    let path = '';
+    while (el && el.nodeType === Node.ELEMENT_NODE && el !== document.body) {
+        let selector = el.nodeName.toLowerCase();
+        if (el.id) selector += `#${el.id}`;
+        path = selector + (path ? ' > ' + path : '');
+        el = el.parentNode;
+    }
+    return 'body > ' + path;
+}
+
 //handles animations and function for taskbar buttons
 function createTaskbarButton(el) {
     el.addEventListener('mousedown', () => {
         el.classList.add('pressed');
     });
     switch(el.className.split(' ')[1]) {
-    case 'app':
-        el.addEventListener('mouseup', (event) => {
-            if ((event.button === 0 || event.button === 1) && document.querySelectorAll('#'+el.id+'-app').length == 0) {
-                openApp(el);
-            } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length == 1){
-                document.getElementById(el.id+'-app').style.display = document.getElementById(el.id+'-app').style.display == 'none' ? 'block' : 'none';
-                el.classList.contains('active') ? el.classList.remove('active') : el.classList.add('active');
-            } else if (event.button === 1) {
-                openApp(el);
-            }
-            //will need to make a menu for when theres multiple windows
-        });
+        case 'app':
+            el.addEventListener('mouseup', (event) => {
+                if ((event.button === 0 || event.button === 1) && document.querySelectorAll('#'+el.id+'-app').length == 0) {
+                    openApp(el);
+                } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length == 1){
+                    document.getElementById(el.id+'-app').style.display = document.getElementById(el.id+'-app').style.display == 'none' ? 'block' : 'none';
+                    el.classList.contains('active') ? el.classList.remove('active') : el.classList.add('active');
+                } else if (event.button === 1) {
+                    openApp(el);
+                }
+                //will need to make a menu for when theres multiple windows
+            });
         break;
-    case 'popup':
-        el.addEventListener('mouseup', (event) => {
-            if (event.button === 0) {
-                let openMenu = true;
-                document.querySelectorAll('.menu').forEach(menu => {
-                    menu.remove();
-                    document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
-                    if (menu.id.split('-')[0] == el.id.split('-')[0]) {
-                        openMenu = false;
-                    }
-                });
-                if (openMenu) {
-                    el.classList.add('active');
-                    if (el.parentElement.id == 'taskbar') {
-                        document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu left acrylic"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input/></div></div>');
-                        let menu = document.getElementById(el.id.split('-')[0]+'-menu');
-                        menu.firstChild.children[1].focus();
-                        switch(el.id) {
-                            case 'start-button':
-                                menu.firstChild.children[1].placeholder = 'Search for apps, settings, and documents';
-                                menu.insertAdjacentHTML('beforeend', `
-                                    <div>
-                                        <h5>Pinned</h5>
-                                        <div id="allButton" class="button acrylic">
-                                            <p>All ></p>
-                                        </div>
-                                    </div>
-                                    <div id="pinnedApps">
-                                        <!--things will go here-->
-                                    </div>
-                                `);
-                                break;
-                            case 'search-button':
-                                menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
-                                break;
+        case 'popup':
+            el.addEventListener('mouseup', (event) => {
+                if (event.button === 0) {
+                    let openMenu = true;
+                    document.querySelectorAll('.menu').forEach(menu => {
+                        menu.remove();
+                        document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
+                        if (menu.id.split('-')[0] == el.id.split('-')[0]) {
+                            openMenu = false;
                         }
-                    }
-                    if (el.parentElement.id == 'taskbar-icons') {
-                        document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right acrylic"><div/>');
-                        let menu = document.getElementById(el.id.split('-')[0]+'-menu');
-                        switch(el.id) {
-                            case 'controls-button':
+                    });
+                    if (openMenu) {
+                        el.classList.add('active');
+                        if (el.parentElement.id == 'taskbar') {
+                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu left acrylic"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input/></div></div>');
+                            let menu = document.getElementById(el.id.split('-')[0]+'-menu');
+                            menu.firstChild.children[1].focus();
+                            switch(el.id) {
+                                case 'start-button':
+                                    menu.firstChild.children[1].placeholder = 'Search for apps, settings, and documents';
+                                    menu.insertAdjacentHTML('beforeend', `
+                                        <div>
+                                            <h5>Pinned</h5>
+                                            <div id="allButton" class="button acrylic">
+                                                <p>All ></p>
+                                            </div>
+                                        </div>
+                                        <div id="pinnedApps">
+                                            <div id="store" class="icon app" title-data="Microsoft Store">
+                                                <img src="assets/store.png" alt="Microsoft Store"/>
+                                                <p>Microsoft Store</p>
+                                            </div>
+                                            <div id="settings" class="icon app" title-data="Settings">
+                                                <img src="assets/settings.png" alt="Settings"/>
+                                                <p>Settings</p>
+                                            </div>
+                                        </div>
+                                    `);
+                                    document.querySelectorAll('#pinnedApps div').forEach((app) => {
+                                        //add mousedown for animations
+                                        app.addEventListener('mouseup', (event) => {
+                                            if (event.button === 0) {
+                                                openApp(app);
+                                                menu.remove();
+                                            }
+                                        });
+                                    });
                                 break;
-                            case 'clock-button':
+                                case 'search-button':
+                                    menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
                                 break;
+                            }
+                        }
+                        if (el.parentElement.id == 'taskbar-icons') {
+                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right acrylic"><div/>');
+                            let menu = document.getElementById(el.id.split('-')[0]+'-menu');
+                            switch(el.id) {
+                                case 'controls-button':
+                                    //insert stuff
+                                break;
+                                case 'clock-button':
+                                    //insert whatever
+                                break;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
         break;
     }
 }
@@ -99,7 +156,7 @@ function openApp(el, url=el.id) {
     if (taskbarIcon === null) {
         document.getElementById('taskbar-apps').insertAdjacentHTML('beforeend', `
             <div id="${el.id}" class="taskbar-icon app" title-data="${appTitle}">
-                <img src="apps/${el.id}.png" alt="${appTitle}"/>
+                <img src="${el.children[0].src}" alt="${appTitle}"/>
                 <div></div>
             </div>
         `);
@@ -290,17 +347,17 @@ function createIcon(el, url) {
                 case 'web':
                     //sets location to current doamin + /the id
                     document.location.href = window.location.pathname.replace(/[^/]+$/,'')+el.id;
-                    break;
+                break;
                 case 'app':
                     openApp(el, url);
-                    break;
+                break;
             }
         }
     });
 }
 //add listeners to initial icons
 document.querySelectorAll('.icon').forEach(el => {
-    createIcon(el);
+    createIcon(el, el.getAttribute('url') !== null ? el.getAttribute('url') : undefined);
 });
 
 function createRclickSubmenu(content, rclick, button) {
@@ -431,7 +488,7 @@ document.oncontextmenu = function(e) {
         el.remove();
     });
     //if right clicking an icon and its not already selected deselct all else select
-    if (e.target.classList[0] == 'icon') {
+    if (e.target.parentElement.id === 'icons') {
         if (!e.target.classList.contains('selected')) {
             document.querySelectorAll('.selected').forEach(el => {
                 el.classList.remove('selected');
@@ -442,8 +499,7 @@ document.oncontextmenu = function(e) {
 
     document.body.insertAdjacentHTML('afterbegin', '<div id="rclick"></div>');
     let rclick = document.getElementById('rclick');
-
-    if (e.target.classList[0] == 'icon') {
+    if (e.target.parentElement.id === 'icons') {
         //if icons are selected add more options to right click menu
         if (document.querySelectorAll('.selected').length > 0) {
             rclick.insertAdjacentHTML('afterbegin', `
@@ -508,6 +564,7 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });
             document.getElementById('rename').addEventListener('click', () => {
+                e.target.classList.remove('selected');
                 e.target.insertAdjacentHTML('beforeend', `<textarea maxlength="228">${e.target.children[1].textContent}</textarea>`);
                 e.target.children[1].remove();
                 let textinput = e.target.children[1];
@@ -666,60 +723,94 @@ window.onmessage = function(e) {
     } catch {
         return;
     }
-    if (split[0] == 'makeIcon') {
-        let response;
-        let image;
-        let title;
+    switch(split[0]) {
+        case 'makeIcon':
+            let response;
+            let image;
+            let title;
 
-        //make sure split[1] has http(s)://
-        let url = split[1];
-        if (!/^https?:\/\//i.test(url)) {
-            url = 'https://' + url;
-        }
+            //make sure split[1] has http(s)://
+            let url = split[1];
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
 
-        //get domain from url
-        let domainMatch = url.match(/^https?:\/\/([^\/]+)/i);
-        let domain = domainMatch ? domainMatch[1] : url;
+            //get domain from url
+            let domainMatch = url.match(/^https?:\/\/([^\/]+)/i);
+            let domain = domainMatch ? domainMatch[1] : url;
 
-        //see if site allows connections
-        let request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                if (this.status === 200) {
-                    response = this.responseText;
+            //see if site allows connections
+            let request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    if (this.status === 200) {
+                        response = this.responseText;
 
-                    //get icon from domain
-                    image = 'https://' + domain + '/favicon.ico';
+                        //get icon from domain
+                        image = 'https://' + domain + '/favicon.ico';
 
-                    //get title from html
-                    let match = response.match(/<title>([^<]*)<\/title>/i);
-                    title = match ? match[1] : split[1];
-                }  else {
-                    response = false;
-                    image = 'assets/noicon.png';
-                    title = split[1];
+                        //get title from html
+                        let match = response.match(/<title>([^<]*)<\/title>/i);
+                        title = match ? match[1] : split[1];
+                    }  else {
+                        response = false;
+                        image = 'assets/noicon.png';
+                        title = split[1];
+                    }
                 }
-            }
-        };
-        request.open("GET", url, true);
-        request.send(null);
+            };
+            request.open("GET", url, true);
+            request.send(null);
 
-        let checkRequest;
-        //keep checking if there is a resonse from the site every 5 milliseconds 
-        checkRequest = setInterval(function() {
-            if (response != undefined) {
-                icons.insertAdjacentHTML('beforeend', '<div class="icon app" id="'+domain.split('.')[0]+'" title-data="'+title+'"><img src="'+image+'"/><p>'+title+'</p></div>');
-                createIcon(icons.lastChild, url);
-                clearInterval(checkRequest);
-            }
-        }), 5;
+            let checkRequest;
+            //keep checking if there is a resonse from the site every 5 milliseconds 
+            checkRequest = setInterval(function() {
+                if (response != undefined) {
+                    icons.insertAdjacentHTML('beforeend', `<div class="icon app user-created" id="${domain.split('.')[0]}" title-data="${title}" url="${url}"><img src="${image}"/><p>${title}</p></div>`);
+                    createIcon(icons.lastChild, url);
+                    clearInterval(checkRequest);
+                }
+            }), 5;
+        break;
+        case 'save':
+            const styles = {};
+            const classes = {};
+            const userCreated = [];
+
+            document.body.querySelectorAll('*').forEach(el => {
+                // Save inline styles
+                if (el.hasAttribute('style')) {
+                    styles[getElementPath(el)] = el.getAttribute('style');
+                }
+
+                // Save .user-created elements completely
+                if (el.classList.contains('user-created')) {
+                    userCreated.push({
+                        path: getElementPath(el),
+                        outerHTML: el.outerHTML
+                    });
+                }
+            });
+
+            // Save #desktop class
+            classes['#icons'] = document.getElementById('icons').className;
+
+            localStorage.setItem('savedStyles', JSON.stringify(styles));
+            localStorage.setItem('savedClasses', JSON.stringify(classes));
+            localStorage.setItem('savedUserCreated', JSON.stringify(userCreated));
+        break;
+        case 'reset':
+            localStorage.removeItem('savedStyles');
+            localStorage.removeItem('savedClasses');
+            localStorage.removeItem('savedUserCreated');
+        break;
     }
 };
 //this should be improved later
 if (location.search) {
     location.search.split('?').forEach((query) => {
         if (query.split('.')[1] == 'url') {
-            openApp(document.getElementById(query.split('.')[0]))
+            openApp(document.getElementById(query.split('.')[0]));
         }
     })
 }

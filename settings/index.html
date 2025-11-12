@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <button onclick="sendMsg('save')">save settings</button>
+        <button onclick="sendMsg('reset')">reset settings</button>
+        <p>reload after resetting to see the changes</p>
+    </body>
+    <script>
+        function sendMsg(msg) {
+            window.top.postMessage(msg, '*')
+        }
+    </script>
+</html>
