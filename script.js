@@ -119,9 +119,11 @@ function createTaskbarButton(el) {
                     let openMenu = true;
                     document.querySelectorAll('.menu').forEach(menu => {
                         if ((event.target.parentElement.id == 'taskbar-icons' && menu.classList.contains('right')) || (event.target.parentElement.id == 'taskbar' && menu.classList.contains('left'))) {
+                            taskbar.classList.add('faketransparency');
                             menu.classList.add('close');
                             setTimeout(() => {
-                                menu.remove(); 
+                                menu.remove();
+                                taskbar.classList.remove('faketransparency');
                             }, 150);
                             document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
                         }
@@ -131,6 +133,7 @@ function createTaskbarButton(el) {
                         }
                     });
                     if (openMenu) {
+                        taskbar.classList.add('faketransparency');
                         el.classList.add('active');
                         if (el.parentElement.id == 'taskbar') {
                             document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu left acrylic"><div class="search-bar"><svg id="search-icon"fill="white"height="15px"width="15px"viewBox="0 0 490.4 490.4" xml:space="preserve"><g><path d="M484.1,454.796l-110.5-110.6c29.8-36.3,47.6-82.8,47.6-133.4c0-116.3-94.3-210.6-210.6-210.6S0,94.496,0,210.796s94.3,210.6,210.6,210.6c50.8,0,97.4-18,133.8-48l110.5,110.5c12.9,11.8,25,4.2,29.2,0C492.5,475.596,492.5,463.096,484.1,454.796zM41.1,210.796c0-93.6,75.9-169.5,169.5-169.5s169.6,75.9,169.6,169.5s-75.9,169.5-169.5,169.5S41.1,304.396,41.1,210.796z"/></g></svg><input/></div></div>');
@@ -185,6 +188,9 @@ function createTaskbarButton(el) {
                                 break;
                             }
                         }
+                        setTimeout(() => {
+                            taskbar.classList.remove('faketransparency');
+                        }, 150);
                     }
                 }
             });

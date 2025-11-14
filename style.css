@@ -57,6 +57,11 @@ h5 {
     height: 48px;
     z-index: 98;
 }
+#taskbar.faketransparency {
+    background-image: url(assets/mybg.png);
+    background-size: cover;
+    background-attachment: fixed;
+}
 
 #start-button {
     width: 42px;
