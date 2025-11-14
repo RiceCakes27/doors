@@ -6,6 +6,9 @@
     font-family: 'Segoe Icons';
     src: url(assets/SegoeIcons.ttf) format('truetype');
 }
+:root {
+    --bgcolor: 97, 97, 97;
+}
 
 body {
     background-image: url(assets/mybg.png);
@@ -61,6 +64,18 @@ h5 {
     margin-left: 11px;
 }
 
+@keyframes upndown {
+    0% {
+        transform: translateY(0);
+    }
+    49%, 51% {
+        transform: translateY(var(--direction));
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
 .taskbar-icon {
     width: 40px;
     height: 40px;
@@ -83,10 +98,18 @@ h5 {
     font-size: medium;
 }
 .taskbar-icon:hover {
-    background-color: rgba(97, 97, 97, 0.25);
+    background-color: rgba(var(--bgcolor), 0.25);
 }
 .taskbar-icon.active {
-    background-color: rgba(97, 97, 97, 0.25);
+    background-color: rgba(var(--bgcolor), 0.25);
+}
+.taskbar-icon.maximize img {
+    animation: upndown ease 0.5s;
+    --direction: -15%;
+}
+.taskbar-icon.minimize img {
+    animation: upndown ease 0.5s;
+    --direction: 10%;
 }
 .taskbar-icon.active div:empty {
     width: 40% !important;
@@ -114,7 +137,7 @@ h5 {
 }
 .taskbar-icon[title-data]:after {
     content: attr(title-data);
-    background-color: rgba(97, 97, 97, 0.3);
+    background-color: rgba(var(--bgcolor), 0.3);
     border-radius: 5px;
     position: absolute;
     padding: 8px 10px 8px 10px;
@@ -131,11 +154,11 @@ h5 {
     width: 100px;
     height: 35px;
     border-radius: 55px;
-    background-color: rgba(97, 97, 97, 0.185);
+    background-color: rgba(var(--bgcolor), 0.185);
     margin-right: 4px;
 }
 #search-button:hover {
-    background-color: rgba(97, 97, 97, 0.25);
+    background-color: rgba(var(--bgcolor), 0.25);
 }
 #search-button svg {
     margin-right: 6px;
@@ -222,7 +245,7 @@ h5 {
     overflow-wrap: break-word;
 }
 .icon:hover {
-    background-color: rgba(97, 97, 97, 0.25);
+    background-color: rgba(var(--bgcolor), 0.25);
 }
 .icon img {
     width: 42.5%;
@@ -247,7 +270,7 @@ h5 {
 }
 
 .selected {
-    background-color: rgba(97, 97, 97, 0.5);
+    background-color: rgba(var(--bgcolor), 0.5);
 }
 
 @keyframes shrink {
@@ -292,22 +315,26 @@ h5 {
 }
 
 .window-buttons {
+    top: 0;
     right: 0;
     position: absolute;
-    margin: -15px 5px;
 }
 .window-buttons p {
-    width: 12px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
     font-size: 10px;
     padding: 0px;
     text-align: center;
-}
-.window-buttons .close:hover {
-    background-color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .window-buttons > :hover {
     background-color: grey;
+}
+.window-buttons .close:hover {
+    background-color: red;
+    border-radius: 0 6px 0 0;
 }
 
 #box {
@@ -351,7 +378,7 @@ h5 {
     align-items: center;
 }
 #rclick div:hover {
-    background-color: rgba(97, 97, 97, 0.15);
+    background-color: rgba(var(--bgcolor), 0.15);
     border-radius: 5px;
 }
 #rclick div p {
@@ -375,9 +402,12 @@ h5 {
     height: 1px;
     background-color: #36383b;
 }
+#rclick div[disabled] p {
+    color: grey;
+}
 #rclick.tbRclick {
     width: 160px;
-    background-color: rgba(97, 97, 97, 0.2);
+    background-color: rgba(var(--bgcolor), 0.2);
     border-radius: 6px;
     border-width: 0;
 }
@@ -436,7 +466,7 @@ h5 {
 }
 .menu .button {
     display: flex;
-    background-color: rgba(97, 97, 97, 0.2);
+    background-color: rgba(var(--bgcolor), 0.2);
     height: 24px;
     width: 45px;
     text-align: center;
@@ -445,10 +475,10 @@ h5 {
     border-radius: 5px;
 }
 .menu .button:hover {
-    background-color: rgba(97, 97, 97, 0.3);
+    background-color: rgba(var(--bgcolor), 0.3);
 }
 .menu .button:active {
-    background-color: rgba(97, 97, 97, 0.1);
+    background-color: rgba(var(--bgcolor), 0.1);
     opacity: .8;
 }
 
@@ -471,7 +501,7 @@ h5 {
     height: 80px;
 }
 #pinnedApps .icon:hover {
-    background-color: rgba(97, 97, 97, 0.18);
+    background-color: rgba(var(--bgcolor), 0.18);
 }
 #pinnedApps .icon img {
     width: 35%;

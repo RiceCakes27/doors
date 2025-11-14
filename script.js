@@ -51,6 +51,20 @@ function getElementPath(el) {
     return 'body > ' + path;
 }
 
+//ugh this still misorders windows sometimes no clue how to fix
+//window zIndex ordering
+function setTopWindow(elem) {
+    let allWindows = document.querySelectorAll('.window');
+    if (elem.style.zIndex != allWindows.length) {
+        elem.style.zIndex = allWindows.length;
+        for (let i = 0; i < allWindows.length; i++) {
+            if (allWindows[i] !== elem && allWindows[i].style.zIndex > 1) {
+                allWindows[i].style.zIndex -= 1;
+            }
+        }
+    }
+}
+
 //handles animations and function for taskbar buttons
 function createTaskbarButton(el) {
     el.addEventListener('mousedown', () => {
@@ -58,16 +72,45 @@ function createTaskbarButton(el) {
     });
     switch(el.className.split(' ')[1]) {
         case 'app':
+            el.addEventListener('mousedown', () => {
+                document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
+                    if (icon !== el) {
+                        icon.classList.remove('active');
+                    } 
+                });
+            });
             el.addEventListener('mouseup', (event) => {
-                if ((event.button === 0 || event.button === 1) && document.querySelectorAll('#'+el.id+'-app').length == 0) {
+                const app = document.getElementById(el.id+'-app');
+                //if left or middle click and there is no app open, open app
+                if ((event.button === 0 || event.button === 1) && app == null) {
                     openApp(el);
+                //if left click and one app open
                 } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length == 1){
-                    document.getElementById(el.id+'-app').style.display = document.getElementById(el.id+'-app').style.display == 'none' ? 'block' : 'none';
-                    el.classList.contains('active') ? el.classList.remove('active') : el.classList.add('active');
+                    //reset animation
+                    el.classList.remove('maximize', 'minimize');
+                    //if app is visible and focused, hide and play minimize animation
+                    if (app.style.display !== 'none' && el.classList.contains('active')) {
+                        el.classList.remove('active');
+                        el.classList.add('minimize');
+                        app.style.display = 'none';
+                    //if app not visible, show and play maximize animation
+                    } else if (app.style.display == 'none') {
+                        el.classList.add('active', 'maximize');
+                        app.style.display = 'block';
+                        setTopWindow(app);
+                    //if app visible but app not focused, "focus" app
+                    } else if (app.style.display !== 'none') {
+                        el.classList.add('active');
+                        setTopWindow(app);
+                    }
+                //if left click and more than one window open
+                } else if (event.button === 0 && document.querySelectorAll('#'+el.id+'-app').length > 1) {
+                    //TODO: make a menu for when theres multiple windows
+                    console.log('there should be a window so you can select which window to open right now but alas there is not');
+                //middle click always opens window
                 } else if (event.button === 1) {
                     openApp(el);
                 }
-                //will need to make a menu for when theres multiple windows
             });
         break;
         case 'popup':
@@ -98,11 +141,11 @@ function createTaskbarButton(el) {
                                             </div>
                                         </div>
                                         <div id="pinnedApps">
-                                            <div id="store" class="icon app" title-data="Microsoft Store">
+                                            <div id="store" class="icon app single-instance" title-data="Microsoft Store">
                                                 <img src="assets/store.png" alt="Microsoft Store"/>
                                                 <p>Microsoft Store</p>
                                             </div>
-                                            <div id="settings" class="icon app" title-data="Settings">
+                                            <div id="settings" class="icon app single-instance" title-data="Settings">
                                                 <img src="assets/settings.png" alt="Settings"/>
                                                 <p>Settings</p>
                                             </div>
@@ -114,6 +157,7 @@ function createTaskbarButton(el) {
                                             if (event.button === 0) {
                                                 openApp(app);
                                                 menu.remove();
+                                                document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
                                             }
                                         });
                                     });
@@ -183,175 +227,182 @@ async function createUserIcon(split) {
 
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
-    const appTitle = el.getAttribute('title-data');
-    document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+appTitle+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
-    let elem = document.getElementById(el.id+'-app');
-    elem.style.zIndex = document.querySelectorAll('.window').length;
-    let taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
-    if (taskbarIcon === null) {
-        document.getElementById('taskbar-apps').insertAdjacentHTML('beforeend', `
-            <div id="${el.id}" class="taskbar-icon app" title-data="${appTitle}">
-                <img src="${el.children[0].src}" alt="${appTitle}"/>
-                <div></div>
-            </div>
-        `);
-        taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
-        createTaskbarButton(taskbarIcon);
-    }
-    if (taskbarIcon.classList.contains('active')) {
-        //add visual for multiple windows
+    if (el.classList.contains('single-instance') && document.querySelector('#'+el.id+'-app') !== null) {
+        //document.querySelector('#'+el.id+'-app').focus(); wish it was this easy
+        let tbIcon = document.querySelector('#'+el.id+'.taskbar-icon');
+        tbIcon.classList.add('active');
+        setTopWindow(tbIcon);
     } else {
-        //set timeout lets the animation play, there are likely better solutions
-        setTimeout(() => {
-            taskbarIcon.classList.add('open','active');
-        },0);
-    }
-    //set cursor to appropriate one
-    let relativeX, relativeY, borderSize = 5;
-    elem.onmousemove = function(e) {
-        let rect = elem.getBoundingClientRect();
-        relativeX = e.clientX - rect.left, relativeY = e.clientY - rect.top; //the mouse postion on the element
-        let cursor = "";
+        const appTitle = el.getAttribute('title-data');
+        document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+appTitle+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
+        let elem = document.getElementById(el.id+'-app');
+        if (document.querySelectorAll('#'+elem.id).length > 1) {
+            let elemBounds = elem.getBoundingClientRect();
+            let windowCount = document.querySelectorAll('#'+elem.id).length-1;
+            elem.style.left = elemBounds.left + windowCount*15 + "px";
+            elem.style.top = elemBounds.top + windowCount*15 + "px";
+        }
+        elem.style.zIndex = document.querySelectorAll('.window').length;
+        let taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
+        if (taskbarIcon === null) {
+            document.getElementById('taskbar-apps').insertAdjacentHTML('beforeend', `
+                <div id="${el.id}" class="taskbar-${el.className}" title-data="${appTitle}">
+                    <img src="${el.children[0].src}" alt="${appTitle}"/>
+                    <div></div>
+                </div>
+            `);
+            taskbarIcon = document.querySelector(`#${el.id}.taskbar-icon`);
+            createTaskbarButton(taskbarIcon);
+        }
+        if (taskbarIcon.classList.contains('active')) {
+            //add visual for multiple windows
+        } else {
+            //set timeout lets the animation play, there are likely better solutions
+            setTimeout(() => {
+                taskbarIcon.classList.add('open','active');
+            },0);
+        }
+        //set cursor to appropriate one
+        let relativeX, relativeY, borderSize = 5;
+        elem.onmousemove = function(e) {
+            let rect = elem.getBoundingClientRect();
+            relativeX = e.clientX - rect.left, relativeY = e.clientY - rect.top; //the mouse postion on the element
+            let cursor = "";
 
-        if(relativeY < borderSize)
-            cursor += "n"; //north
-        else if(relativeY > rect.height - borderSize)
-            cursor += "s"; //south
+            if(relativeY < borderSize)
+                cursor += "n"; //north
+            else if(relativeY > rect.height - borderSize)
+                cursor += "s"; //south
 
-        if(relativeX < borderSize)
-            cursor += "w"; //west
-        else if(relativeX > rect.width - borderSize)
-            cursor += "e"; //east
+            if(relativeX < borderSize)
+                cursor += "w"; //west
+            else if(relativeX > rect.width - borderSize)
+                cursor += "e"; //east
 
-        if(cursor)
-            elem.style.cursor = cursor + "-resize";
-        else
-            elem.style.cursor = "auto";
-    }
+            if(cursor)
+                elem.style.cursor = cursor + "-resize";
+            else
+                elem.style.cursor = "auto";
+        }
 
-    let dragging = false;
-    elem.addEventListener('mousedown', (e) => {
-        let elemArea = elem.getBoundingClientRect();
-        let y = relativeY, x = relativeX;
-        document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
-            icon.classList.remove('active');
+        let dragging = false;
+        elem.addEventListener('mousedown', (e) => {
+            let elemArea = elem.getBoundingClientRect();
+            let y = relativeY, x = relativeX;
+            document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
+                icon.classList.remove('active');
+            });
+            !taskbarIcon.classList.contains('active') ? taskbarIcon.classList.add('active') : '';
+            //window dragging
+            function handleMouseMove(cursor) {
+                if (dragging) {
+                    elem.style.cursor = 'auto';
+                    elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                    elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                } else {
+                    if(y < borderSize) {
+                        if ((elemArea.height+elemArea.top)-cursor.y > elem.firstChild.offsetHeight + 15) {
+                            elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                            elem.style.height = (elemArea.height+elemArea.top)-cursor.y+"px";
+                        }
+                    } else if(y > elemArea.height - borderSize) {
+                        if (cursor.y-(elemArea.top) > elem.firstChild.offsetHeight + 15) {
+                            elem.style.height = cursor.y-(elemArea.top)+"px";
+                        }
+                    }
+
+                    if(x < borderSize) {
+                        if ((elemArea.width+elemArea.left)-cursor.x > elem.firstChild.offsetWidth + elem.children[1].offsetWidth + 15) {
+                            elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                            elem.style.width = (elemArea.width+elemArea.left)-cursor.x+"px";
+                        }
+                    } else if(x > elemArea.width - borderSize) {
+                        if (cursor.x-(elemArea.left) > elem.firstChild.offsetWidth + elem.children[1].offsetWidth + 15) {
+                            elem.style.width = cursor.x-(elemArea.left)+"px";
+                        }
+                    }       
+                }
+            };
+            function noMoreDrag() {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', noMoreDrag);
+                elem.lastChild.style.pointerEvents = 'all';
+            };
+            if (e.target == elem) {
+                setTopWindow(elem);
+
+                //unfullscreen when grab window while fullscreen
+                if (elem.classList.contains('fullscreen')) {
+                    elem.classList.remove('fullscreen');
+                    //TO DO: make window return to non full screen position and size
+                    //elem.style.width = storedBounds.width+'px';
+                    //elem.style.height = storedBounds.height+'px';
+                    //elem.style.left = e.x+'px';
+                }
+                //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
+                //if there are no fullscreen windows disable acrylic taskbar
+                if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+                    taskbar.classList.remove('acrylic');
+                }
+                //disable pointers events so dragging works better
+                elem.lastChild.style.pointerEvents = 'none';
+                //tell if the user is dragging or resizing by cursor
+                if (elem.style.cursor == 'auto') {
+                    dragging = true;
+                } else {
+                    dragging = false;
+                }
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', noMoreDrag);
+            }
         });
-        !taskbarIcon.classList.contains('active') ? taskbarIcon.classList.add('active') : '';
-        //window dragging
-        function handleMouseMove(cursor) {
-            if (dragging) {
-                elem.style.cursor = 'auto';
-                elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
-                elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
-            } else {
-                if(y < borderSize) {
-                    if ((elemArea.height+elemArea.top)-cursor.y > elem.firstChild.offsetHeight + 15) {
-                        elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
-                        elem.style.height = (elemArea.height+elemArea.top)-cursor.y+"px";
-                    }
-                } else if(y > elemArea.height - borderSize) {
-                    if (cursor.y-(elemArea.top) > elem.firstChild.offsetHeight + 15) {
-                        elem.style.height = cursor.y-(elemArea.top)+"px";
-                    }
-                }
-
-                if(x < borderSize) {
-                    if ((elemArea.width+elemArea.left)-cursor.x > elem.firstChild.offsetWidth + elem.children[1].offsetWidth + 15) {
-                        elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
-                        elem.style.width = (elemArea.width+elemArea.left)-cursor.x+"px";
-                    }
-                } else if(x > elemArea.width - borderSize) {
-                    if (cursor.x-(elemArea.left) > elem.firstChild.offsetWidth + elem.children[1].offsetWidth + 15) {
-                        elem.style.width = cursor.x-(elemArea.left)+"px";
-                    }
-                }       
-            }
-        };
-        function noMoreDrag() {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', noMoreDrag);
-            elem.lastChild.style.pointerEvents = 'all';
-        };
-
-        if (e.target == elem || e.target == elem.firstChild) {
-            //ugh this still misorders windows sometimes no clue how to fix
-            //window zIndex ordering
-            let allWindows = document.querySelectorAll('.window');
-            if (elem.style.zIndex != allWindows.length) {
-                elem.style.zIndex = allWindows.length;
-                for (let i = 0; i < allWindows.length; i++) {
-                    if (allWindows[i] !== elem && allWindows[i].style.zIndex > 1) {
-                        allWindows[i].style.zIndex -= 1;
-                    }
+        //handlers for buttons on app windows
+        document.querySelector('#'+elem.id+' .close').addEventListener('click', () => {
+            elem.remove(); //close window
+            if (document.querySelectorAll('#'+elem.id).length <= 0) {
+                if (taskbarIcon.classList.contains('pinned')) {
+                    taskbarIcon.classList.remove('active', 'open');
+                } else {
+                    taskbarIcon.remove();
                 }
             }
-            //unfullscreen when grab window while fullscreen
+            if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+                taskbar.classList.remove('acrylic');
+            }
+        });
+        let storedBounds;
+        document.querySelector('#'+elem.id+' .max').addEventListener('click', () => {
             if (elem.classList.contains('fullscreen')) {
                 elem.classList.remove('fullscreen');
-                //TO DO: make window return to non full screen position and size
-                //elem.style.width = storedBounds.width+'px';
-                //elem.style.height = storedBounds.height+'px';
-                //elem.style.left = e.x+'px';
-            }
-            //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
-            //if there are no fullscreen windows disable acrylic taskbar
-            if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
-                taskbar.classList.remove('acrylic');
-            }
-            //disable pointers events so dragging works better
-            elem.lastChild.style.pointerEvents = 'none';
-            //tell if the user is dragging or resizing by cursor
-            if (elem.style.cursor == 'auto') {
-                dragging = true;
+                if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
+                    taskbar.classList.remove('acrylic');
+                }
+                elem.style.left = storedBounds.left+'px';
+                elem.style.top = storedBounds.top+'px';
+                elem.style.width = storedBounds.width+'px';
+                elem.style.height = storedBounds.height+'px';
             } else {
-                dragging = false;
+                storedBounds = elem.getBoundingClientRect();
+                elem.classList.add('fullscreen');
+                taskbar.classList.add('acrylic');
+                elem.style.left = 0;
+                elem.style.top = 0;
+                elem.style.width = document.body.getBoundingClientRect().width+'px';
+                elem.style.height = document.body.getBoundingClientRect().height+'px';
             }
-
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', noMoreDrag);
-        }
-    });
-    //handlers for buttons on app windows
-    document.querySelector('#'+elem.id+' .close').addEventListener('click', () => {
-        elem.remove(); //close window
-        if (document.querySelectorAll('#'+elem.id).length <= 0) {
-            if (taskbarIcon.classList.contains('pinned')) {
-                taskbarIcon.classList.remove('active', 'open');
-            } else {
-                taskbarIcon.remove();
+        });
+        document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
+            elem.style.display = 'none';
+            if (document.querySelectorAll('#'+elem.id).length <= 1) {
+                taskbarIcon.classList.remove('active');
             }
-        }
-        if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
-            taskbar.classList.remove('acrylic');
-        }
-    });
-    let storedBounds;
-    document.querySelector('#'+elem.id+' .max').addEventListener('click', () => {
-        if (elem.classList.contains('fullscreen')) {
-            elem.classList.remove('fullscreen');
-            if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
-                taskbar.classList.remove('acrylic');
-            }
-            elem.style.left = storedBounds.left+'px';
-            elem.style.top = storedBounds.top+'px';
-            elem.style.width = storedBounds.width+'px';
-            elem.style.height = storedBounds.height+'px';
-        } else {
-            storedBounds = elem.getBoundingClientRect();
-            elem.classList.add('fullscreen');
-            taskbar.classList.add('acrylic');
-            elem.style.left = 0;
-            elem.style.top = 0;
-            elem.style.width = document.body.getBoundingClientRect().width+'px';
-            elem.style.height = document.body.getBoundingClientRect().height+'px';
-        }
-    });
-    document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
-        elem.style.display = 'none';
-        if (document.querySelectorAll('#'+elem.id).length <= 1) {
-            taskbarIcon.classList.remove('active');
-        }
-    });
+            taskbarIcon.classList.remove('maximize');
+            setTimeout(() => {
+                taskbarIcon.classList.add('minimize');
+            }, 0);
+        });
+    }
 }
 //handler for desktop icons, double click to open & selection
 function createIcon(el, url) {
@@ -421,23 +472,20 @@ function createRclickSubmenu(content, rclick, button) {
 }
 
 document.body.addEventListener('mousedown', (event) => {
+    const targetPath = getElementPath(event.target);
     //taskbar icon handler
-    if (!event.target.classList.contains('window') && !event.target.classList.contains('taskbar-icon')) {
-        document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
+    if (!targetPath.includes('-app') && !event.target.classList.contains('app')) {
+        document.querySelectorAll('#taskbar-apps .taskbar-icon.active').forEach((icon) => {
             icon.classList.remove('active');
         });
     }
-    //this deals with certain exceptions in regards to right clicking and i really hate it
+    //this deals with certain exceptions in regards to right clicking and i kinda hate it
     //if left or right click (no middle)
     if (event.button == 0 || event.button == 2) {
         //if right clicking on icon prevent it from being deselected
         if (event.button == 2 && event.target.classList[0] == 'icon') return;
         //if the click point was on the right click menu return to prevent deselection
-        let isRmenu = false;
-        document.querySelectorAll('#rclick, #rclick div').forEach(el => {
-            if (event.target == el) isRmenu = true;
-        })
-        if (isRmenu) return;
+        if (event.target.id == 'rclick' || event.target.parentElement.id == 'rclick') return;
 
         document.querySelectorAll('.selected').forEach(el => {
             el.classList.remove('selected');
@@ -471,14 +519,10 @@ document.body.addEventListener('mousedown', (event) => {
         });
     };
     //handle menus
-    if (!event.target.classList.contains('popup')) {
+    if (!targetPath.includes('menu') && !event.target.classList.contains('popup')) {
         document.querySelectorAll('.menu').forEach(el => {
-            let menuArea = el.getBoundingClientRect();
-            let overlap = (event.y <= menuArea.bottom && event.y >= menuArea.top && event.x <= menuArea.right && event.x >= menuArea.left);
-            if (!overlap) {
-                el.remove();
-                document.getElementById(el.id.split('-')[0]+'-button').classList.remove('active');
-            }
+            el.remove();
+            document.getElementById(el.id.split('-')[0]+'-button').classList.remove('active');
         });
     }
     //if click was not middle mouse
@@ -487,7 +531,7 @@ document.body.addEventListener('mousedown', (event) => {
         document.querySelectorAll('#rclick').forEach(el => {
             el.remove();
         });
-        //if click was on body and not middle mouse
+        //if click was on desktop and not middle mouse
         if (event.target == desktop) {
             //creating the box every time is dumb, would love to fix if i knew how
             document.body.insertAdjacentHTML('afterbegin', '<div id="box"></div>');
@@ -648,7 +692,7 @@ document.oncontextmenu = function(e) {
             <div id="sort"><p>Sort by</p><p>></p></div>
             <div id="refresh"><p>Refresh</p></div>
             <div></div>
-            <div id="paste"><p>Paste</p></div>
+            <div id="paste" disabled><p>Paste</p></div>
             <div></div>
             <div id="new"><p>New</p><p>></p></div>
             <div></div>
@@ -797,13 +841,13 @@ window.onmessage = function(e) {
         break;
     }
 };
-//this should be improved later
+//url query handler
 if (location.search) {
     location.search.split('?').forEach((query) => {
         if (query) {
             if (query.split('.')[1] == 'url') {
                 openApp(document.getElementById(query.split('.')[0]));
-            } else {
+            } else if (query.split('.')[1] !== undefined) {
                 (async () => {
                     const app = await createUserIcon(query);
                     openApp(app, app.getAttribute('url'));
