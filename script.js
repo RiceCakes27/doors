@@ -118,8 +118,14 @@ function createTaskbarButton(el) {
                 if (event.button === 0) {
                     let openMenu = true;
                     document.querySelectorAll('.menu').forEach(menu => {
-                        menu.remove();
-                        document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
+                        if ((event.target.parentElement.id == 'taskbar-icons' && menu.classList.contains('right')) || (event.target.parentElement.id == 'taskbar' && menu.classList.contains('left'))) {
+                            menu.classList.add('close');
+                            setTimeout(() => {
+                                menu.remove(); 
+                            }, 150);
+                            document.getElementById(menu.id.split('-')[0]+'-button').classList.remove('active');
+                        }
+
                         if (menu.id.split('-')[0] == el.id.split('-')[0]) {
                             openMenu = false;
                         }

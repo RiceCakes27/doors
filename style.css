@@ -15,7 +15,7 @@ body {
     background-size: cover;
     background-attachment: fixed;
     margin: 0;
-    height: calc(100vh - 48px)
+    height: calc(100vh - 48px);
 }
 body * {
     user-select: none;
@@ -55,7 +55,7 @@ h5 {
     bottom: 0;
     width: 100%;
     height: 48px;
-    z-index: 97;
+    z-index: 98;
 }
 
 #start-button {
@@ -96,6 +96,7 @@ h5 {
 .taskbar-icon > pre {
     font-family: Segoe Icons;
     font-size: medium;
+    pointer-events: none;
 }
 .taskbar-icon:hover {
     background-color: rgba(var(--bgcolor), 0.25);
@@ -200,6 +201,9 @@ h5 {
 #clock-button {
     width: 77px;
     height: 40px;
+}
+#clock-button div {
+    pointer-events: none;
 }
 #clock-button p {
     text-align: right;
@@ -440,15 +444,29 @@ h5 {
     border-radius: 0;
 }
 
+@keyframes menu {
+    0% {
+        transform: translateY(102%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
 .menu {
     max-width: calc(100vw - 24px);
-    max-height: 90vh;
+    max-height: calc(90vh - 48px);
     bottom: 62px;
     position: fixed;
     background-color: rgba(19, 64, 127, .9);
     border: solid 1px rgba(50, 63, 83, 0.6);
     border-radius: 10px;
     z-index: 97;
+    animation: menu 0.15s;
+}
+.menu.close {
+    transition: all 0.15s;
+    transform: translateY(102%);
 }
 
 .menu.left {
