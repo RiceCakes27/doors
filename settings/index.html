@@ -1,16 +1,201 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+        <link rel="stylesheet" href="../styles.css"/>
     </head>
     <body>
+        <div id="settingsMenuHolder">
+            <div id="buttonsHolder" class="vertical-box">
+                <div>
+                    <p>user account here</p>
+                </div>
+                <div id="homeButton" class="button active" onclick="openMenu('home')">
+                    <p>Home</p>
+                </div>
+                <div id="systemButton" class="button" onclick="openMenu('system')">
+                    <p>System</p>
+                </div>
+                <div id="bluetoothButton" class="button" onclick="openMenu('bluetooth')">
+                    <p>Bluetooth & devices</p>
+                </div>
+                <div id="networkButton" class="button" onclick="openMenu('network')">
+                    <p>Network & internet</p>
+                </div>
+                <div id="personalizeButton" class="button" onclick="openMenu('personalize')">
+                    <p>Personalization</p>
+                </div>
+                <div id="appsButton" class="button" onclick="openMenu('apps')">
+                    <p>Apps</p>
+                </div>
+                <div id="accountsButton" class="button" onclick="openMenu('accounts')">
+                    <p>Accounts</p>
+                </div>
+                <div id="timeButton" class="button" onclick="openMenu('time')">
+                    <p>Time & language</p>
+                </div>
+                <div id="gamingButton" class="button" onclick="openMenu('gaming')">
+                    <p>Gaming</p>
+                </div>
+                <div id="accesibilityButton" class="button" onclick="openMenu('accesibility')">
+                    <p>Accesibility</p>
+                </div>
+                <div id="privacyButton" class="button" onclick="openMenu('privacy')">
+                    <p>Privacy & security</p>
+                </div>
+                <div id="updateButton" class="button" onclick="openMenu('update')">
+                    <p>Doors Update</p>
+                </div>
+            </div>
+            <div id="menusHolder">
+                <div id="home" class="active">
+                    <h2>Home</h2>
+                </div>
+                <div id="system">
+                    <h2>System</h2>
+                </div>
+                <div id="bluetooth">
+                    <h2>Bluetooth & devices</h2>
+                </div>
+                <div id="network">
+                    <h2>Network & internet</h2>
+                </div>
+                <div id="personalize">
+                    <h2>Personalization</h2>
+                    <div class="active">
+                        <div id="desktop"></div>
+                        <div class="vertical-box">
+                            <div class="button" onclick="openMenu('Background')">
+                                <p>Background</p><p>></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Background">
+                        <div id="desktop"></div>
+                        <div class="vertical-box">
+                            <div class="dropdown">
+                                <div class="button">
+                                    <p>Personalize your background<br><span>A picture background applies to your current desktop. Solid color or slideshow backgrounds apply to all your desktops.</span></p>
+                                    <select>
+                                        <option value="picture">Picture</option>
+                                        <option value="color">Solid color</option>
+                                        <option value="slideshow">Slideshow</option>
+                                        <option value="spotlight">Doors spotlight</option>
+                                    </select>
+                                    <p>^</p>
+                                </div>
+                                <div id="backgroundDropdown">
+                                    <div></div>
+                                    <div class="horizontal-box">
+                                        <p>Choose a photo</p>
+                                        <div class="button" onclick="pickImage()">
+                                            <p>Browse photos</p>
+                                        </div>
+                                    </div>
+                                    <div></div>
+                                    <div class="horizontal-box">
+                                        <p>Choose a fit for your desktop image</p>
+                                        <select>
+                                            <option value="span">Span</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="apps">
+                    <h2>Apps</h2>
+                </div>
+                <div id="accounts">
+                    <h2>Accounts</h2>
+                </div>
+                <div id="time">
+                    <h2>Time & language</h2>
+                </div>
+                <div id="gaming">
+                    <h2>Gaming</h2>
+                </div>
+                <div id="accesibility">
+                    <h2>Accesibility</h2>
+                </div>
+                <div id="privacy">
+                    <h2>Privacy & security</h2>
+                </div>
+                <div id="update">
+                    <h2>Doors Update</h2>
+                </div>
+            </div>
+        </div>
         <button onclick="sendMsg('save')">save settings</button>
         <button onclick="sendMsg('reset')">reset settings</button>
         <p>reload after resetting to see the changes</p>
     </body>
     <script>
+        function changeStylesheetRule(stylesheet, selector, property, value) {
+            // Change it if it exists
+            for(var i = 0; i < stylesheet.rules.length; i++) {
+                var rule = stylesheet.rules[i];
+                if(rule.selectorText === selector) {
+                    rule.style[property] = value;
+                    return;
+                }
+            }
+        
+            // Add it if it does not
+            stylesheet.insertRule(selector + " { " + property + ": " + value + "; }", 0);
+        }
         function sendMsg(msg) {
-            window.top.postMessage(msg, '*')
+            window.top.postMessage(msg, '*');
+        }
+        function openMenu(menuId) {
+            const menu = document.getElementById(menuId);
+            const button = document.getElementById(`${menuId}Button`);
+            const activeMenu = document.querySelector('#menusHolder > div.active');
+            const activeButton = document.querySelector('#buttonsHolder > div.active');
+            if (activeMenu.contains(menu) && button !== activeButton) {
+                //sub menu
+                document.querySelector('#menusHolder > div.active > div.active').classList.remove('active');
+
+                activeMenu.firstElementChild.innerHTML = `<a onclick="openMenu('${activeMenu.id}')">${activeMenu.firstElementChild.textContent}</a> > ${menuId}`;
+            } else {
+                activeButton.classList.remove('active');
+                activeMenu.classList.remove('active');
+
+                button.classList.add('active');
+                //sub menu stuff
+                if (document.querySelector(`#${menuId} > :nth-child(2)`)) {
+                    document.querySelector(`#${menuId} > div.active`).classList.remove('active');
+
+                    document.querySelector(`#${menuId} > :nth-child(2)`).classList.add('active');
+                }
+                menu.firstElementChild.textContent = document.querySelector('#buttonsHolder > div.active').firstElementChild.textContent;
+            }
+            menu.classList.add('active');
+        }
+        function pickImage() {
+            return new Promise((resolve, reject) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = () => {
+                    const file = input.files[0];
+                    if (!file) {
+                        reject('No file selected');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        sendMsg("style desktop "+reader.result); // base64 data URL
+                        changeStylesheetRule(document.styleSheets[0], "#desktop", "background-image", `url(${reader.result})`);
+                    }
+                    reader.onerror = () => reject('Failed to read file');
+                    reader.readAsDataURL(file);
+                };
+
+                input.click();
+            });
         }
     </script>
 </html>

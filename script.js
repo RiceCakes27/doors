@@ -2,6 +2,8 @@ const desktop = document.getElementById('desktop');
 const icons = document.getElementById('icons');
 const taskbar = document.getElementById('taskbar');
 
+let tempClipboard = [];
+
 function updateClock() {
     let now = new Date();
 
@@ -13,30 +15,72 @@ updateClock();
 setInterval(updateClock, 1000);
 
 //restore saved stuff
-const styles = JSON.parse(localStorage.getItem('savedStyles') || '{}');
-const classes = JSON.parse(localStorage.getItem('savedClasses') || '{}');
-const userCreated = JSON.parse(localStorage.getItem('savedUserCreated') || '[]');
+async function restoreStyles() {
+    const db = await openDB();
 
-// Restore styles
-for (const [path, style] of Object.entries(styles)) {
-    const el = document.querySelector(path);
-    if (el) el.setAttribute('style', style);
+    // Restore styles
+    await new Promise(resolve => {
+        const tx = db.transaction("styles", "readonly");
+        tx.objectStore("styles").openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (!cursor) return resolve();
+
+            const el = document.querySelector(cursor.key);
+            if (el) el.setAttribute("style", cursor.value);
+            cursor.continue();
+        };
+    });
+
+    // Restore classes
+    await new Promise(resolve => {
+        const tx = db.transaction("classes", "readonly");
+        tx.objectStore("classes").openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (!cursor) return resolve();
+
+            const el = document.querySelector(cursor.key);
+            if (el) el.className = cursor.value;
+            cursor.continue();
+        };
+    });
+
+    // Restore user-created elements
+    await new Promise(resolve => {
+        const tx = db.transaction("elements", "readonly");
+        tx.objectStore("elements").openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (!cursor) return resolve();
+
+            const { parentPath, index, outerHTML } = cursor.value;
+            const parent = document.querySelector(parentPath) || document.body;
+
+            const temp = document.createElement("div");
+            temp.innerHTML = outerHTML.trim();
+            const newEl = temp.firstElementChild;
+
+            const reference = parent.children[index] || null;
+            parent.insertBefore(newEl, reference);
+
+            cursor.continue();
+        };
+    });
+};
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open("UIStorage", 1);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            db.createObjectStore("styles");
+            db.createObjectStore("classes");
+            db.createObjectStore("elements");
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
-
-// Restore classes
-for (const [path, className] of Object.entries(classes)) {
-    const el = document.querySelector(path);
-    if (el) el.className = className;
-}
-
-// Restore user-created elements
-userCreated.forEach(item => {
-    const parentPath = item.path.split(' > ').slice(0, -1).join(' > ');
-    const parent = document.querySelector(parentPath) || document.body;
-    const temp = document.createElement('div');
-    temp.innerHTML = item.outerHTML;
-    parent.appendChild(temp.firstElementChild);
-});
 
 function getElementPath(el) {
     if (el === document.body) return 'body';
@@ -51,9 +95,10 @@ function getElementPath(el) {
     return 'body > ' + path;
 }
 
-//ugh this still misorders windows sometimes no clue how to fix
+//TODO: fix window zIndex ordering
 //window zIndex ordering
 function setTopWindow(elem) {
+    elem.style.display = 'block';
     let allWindows = document.querySelectorAll('.window');
     if (elem.style.zIndex != allWindows.length) {
         elem.style.zIndex = allWindows.length;
@@ -161,7 +206,7 @@ function createTaskbarButton(el) {
                                         </div>
                                     `);
                                     document.querySelectorAll('#pinnedApps div').forEach((app) => {
-                                        //add mousedown for animations
+                                        //TODO: add mousedown for animations
                                         app.addEventListener('mouseup', (event) => {
                                             if (event.button === 0) {
                                                 openApp(app);
@@ -181,10 +226,10 @@ function createTaskbarButton(el) {
                             let menu = document.getElementById(el.id.split('-')[0]+'-menu');
                             switch(el.id) {
                                 case 'controls-button':
-                                    //insert stuff
+                                    //TODO: controls menu
                                 break;
                                 case 'clock-button':
-                                    //insert whatever
+                                    //TODO: calander and notifs menu
                                 break;
                             }
                         }
@@ -197,10 +242,6 @@ function createTaskbarButton(el) {
         break;
     }
 }
-//add listeners to initial taskbar icons
-document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #taskbar-icons div').forEach(el => {
-    createTaskbarButton(el);
-});
 
 async function createUserIcon(split) {
     let responseText, image, title;
@@ -243,7 +284,7 @@ function openApp(el, url=el.id) {
         //document.querySelector('#'+el.id+'-app').focus(); wish it was this easy
         let tbIcon = document.querySelector('#'+el.id+'.taskbar-icon');
         tbIcon.classList.add('active');
-        setTopWindow(tbIcon);
+        setTopWindow(document.getElementById(el.id+'-app'));
     } else {
         const appTitle = el.getAttribute('title-data');
         document.body.insertAdjacentHTML('afterbegin','<div id="'+el.id+'-app" class="window"><p>'+appTitle+'</p><div class="window-buttons"><p class="min">-</p><p class="max">◻</p><p class="close">X</p></div><iframe src="'+url+'"></iframe></div>');
@@ -267,7 +308,7 @@ function openApp(el, url=el.id) {
             createTaskbarButton(taskbarIcon);
         }
         if (taskbarIcon.classList.contains('active')) {
-            //add visual for multiple windows
+            //TODO: add visual for multiple windows
         } else {
             //set timeout lets the animation play, there are likely better solutions
             setTimeout(() => {
@@ -346,7 +387,7 @@ function openApp(el, url=el.id) {
                 //unfullscreen when grab window while fullscreen
                 if (elem.classList.contains('fullscreen')) {
                     elem.classList.remove('fullscreen');
-                    //TO DO: make window return to non full screen position and size
+                    //TODO: make window return to non full screen position and size
                     //elem.style.width = storedBounds.width+'px';
                     //elem.style.height = storedBounds.height+'px';
                     //elem.style.left = e.x+'px';
@@ -376,7 +417,10 @@ function openApp(el, url=el.id) {
                 if (taskbarIcon.classList.contains('pinned')) {
                     taskbarIcon.classList.remove('active', 'open');
                 } else {
-                    taskbarIcon.remove();
+                    taskbarIcon.classList.remove('active', 'open');
+                    setTimeout(() => {
+                        taskbarIcon.remove();
+                    }, 100);
                 }
             }
             if (document.querySelectorAll('.fullscreen').length < 1 && taskbar.classList.contains('acrylic')) {
@@ -400,8 +444,8 @@ function openApp(el, url=el.id) {
                 taskbar.classList.add('acrylic');
                 elem.style.left = 0;
                 elem.style.top = 0;
-                elem.style.width = document.body.getBoundingClientRect().width+'px';
-                elem.style.height = document.body.getBoundingClientRect().height+'px';
+                elem.style.width = desktop.getBoundingClientRect().width+'px';
+                elem.style.height = desktop.getBoundingClientRect().height-taskbar.getBoundingClientRect().height+'px';
             }
         });
         document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
@@ -453,9 +497,17 @@ function createIcon(el, url) {
         }
     });
 }
-//add listeners to initial icons
-document.querySelectorAll('.icon').forEach(el => {
-    createIcon(el, el.getAttribute('url') !== null ? el.getAttribute('url') : undefined);
+
+(async () => {
+    await restoreStyles();
+    //add listeners to initial icons
+    document.querySelectorAll('.icon').forEach(el => {
+        createIcon(el, el.getAttribute('url') !== null ? el.getAttribute('url') : undefined);
+    });
+})();
+//add listeners to initial taskbar icons
+document.querySelectorAll('#start-button, #search-button, #taskbar-apps div, #taskbar-icons div').forEach(el => {
+    createTaskbarButton(el);
 });
 
 function createRclickSubmenu(content, rclick, button) {
@@ -533,7 +585,12 @@ document.body.addEventListener('mousedown', (event) => {
     //handle menus
     if (!targetPath.includes('menu') && !event.target.classList.contains('popup')) {
         document.querySelectorAll('.menu').forEach(el => {
-            el.remove();
+            taskbar.classList.add('faketransparency');
+            el.classList.add('close');
+            setTimeout(() => {
+                el.remove();
+                taskbar.classList.remove('faketransparency');
+            }, 150);
             document.getElementById(el.id.split('-')[0]+'-button').classList.remove('active');
         });
     }
@@ -616,7 +673,7 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });
             /*document.getElementById('print').addEventListener('click', () => {
-                //do something here not sure honestley
+                //TODO: printing
                 rclick.remove();
             });*/
             document.getElementById('copyAsPath').addEventListener('click', () => {
@@ -626,27 +683,30 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });
             /*document.getElementById('share').addEventListener('click', () => {
-                //maybe open a share menu
+                //TODO: make share menu
                 rclick.remove();
             });
             document.getElementById('restore').addEventListener('click', () => {
-                //im probably not going to add this functionality
+                //TODO: make file restore menu
                 rclick.remove();
             });
             document.getElementById('sendTo').addEventListener('click', () => {
-                //do something here not sure yet
+                //TODO: make send to menu
                 rclick.remove();
             });
             document.getElementById('cut').addEventListener('click', () => {
-                //cut here
+                //TODO: make cutting functionality
                 rclick.remove();
-            });
+            });*/
             document.getElementById('copy').addEventListener('click', () => {
-                //copy here
+                tempClipboard = [];
+                document.querySelectorAll('.selected').forEach((selectedItem) => {
+                    tempClipboard.push(getElementPath(selectedItem));
+                });
                 rclick.remove();
             });
-            document.getElementById('createShortcut').addEventListener('click', () => {
-                //do something here not sure yet
+            /*document.getElementById('createShortcut').addEventListener('click', () => {
+                //TODO: make creating shortcut functionality
                 rclick.remove();
             });*/
             document.getElementById('deleteButton').addEventListener('click', () => {
@@ -664,7 +724,7 @@ document.oncontextmenu = function(e) {
                 function resize() {
                     textinput.style.height = '1em';
                     textinput.style.height = textinput.scrollHeight + "px";
-                    //dont know how to make the width shrink currently
+                    //TODO: make renaming textarea width shrink
                     //textinput.style.width = '6ch';
                     //console.log(textinput.scrollWidth);
                     //textinput.style.width = textinput.scrollWidth + "px";
@@ -684,7 +744,7 @@ document.oncontextmenu = function(e) {
                 rclick.remove();
             });
             /*document.getElementById('properties').addEventListener('click', () => {
-                //do something here mabye
+                //TODO: make properties menu
                 rclick.remove();
             });*/
         }
@@ -696,7 +756,7 @@ document.oncontextmenu = function(e) {
             <div id="taskbarSettings"><pre>&#57621</pre><p>Taskbar Settings</p></div>
         `);
         rclick.classList.add('tbRclick','acrylic');
-        //add the listeners later
+        //TODO: task manager and taskbar settings
     }
     if (e.target == desktop) {
         rclick.insertAdjacentHTML('afterbegin', `
@@ -704,7 +764,7 @@ document.oncontextmenu = function(e) {
             <div id="sort"><p>Sort by</p><p>></p></div>
             <div id="refresh"><p>Refresh</p></div>
             <div></div>
-            <div id="paste" disabled><p>Paste</p></div>
+            <div id="paste" ${tempClipboard.length > 0 ? '' : 'disabled'}><p>Paste</p></div>
             <div></div>
             <div id="new"><p>New</p><p>></p></div>
             <div></div>
@@ -740,7 +800,7 @@ document.oncontextmenu = function(e) {
             document.getElementById('large').addEventListener('click', setIconSize);
             document.getElementById('medium').addEventListener('click', setIconSize);
             document.getElementById('small').addEventListener('click', setIconSize);
-            /*insert other listeners*/
+            /*TODO: add auto arrange and align icons here*/
             let showIcons = document.getElementById('showIcons');
             showIcons.addEventListener('click', () => {
                 icons.style.display = showIcons.firstChild.nodeName === 'PRE' ? 'none' : 'flex';
@@ -756,12 +816,23 @@ document.oncontextmenu = function(e) {
                 <div id="itemType"><p>Item type</p></div>
                 <div id="dateModfified"><p>Date modified</p></div>
             `, rclick, sort);
-            /*insert listeners here*/
+            /*TODO: add sorting icons here*/
         });
         document.getElementById('refresh').addEventListener('click', () => {
             rclick.remove();
         });
-        /*insert paste listener here*/
+        let paste = document.getElementById('paste');
+        if (!paste.hasAttribute('disabled')) {
+            paste.addEventListener('click', () => {
+                tempClipboard.forEach((entry) => {
+                    const og = document.querySelector(entry);
+                    const url = og.getAttribute('url') !== null ? og.getAttribute('url') : undefined;
+                    icons.insertAdjacentHTML('beforeend', `<div class="icon app user-created" id="${og.id}" title-data="${og.getAttribute('title-data')}" ${url ==! undefined ? `url="${url}"` : ''}><img src="${og.children[0].src}"/><p>${og.getAttribute('title-data')} - Copy</p></div>`);
+                    createIcon(icons.lastChild, url);
+                })
+                rclick.remove();
+            });
+        }
         let newFile = document.getElementById('new');
         newFile.addEventListener('mouseenter', async () => {
             let sub = await createRclickSubmenu(`
@@ -772,16 +843,16 @@ document.oncontextmenu = function(e) {
                 <div id="newTxt"><p>Text Document</p></div>
                 <div id="newZip"><p>Compressed (zipped) Folder</p></div>
             `, rclick, newFile);
-            /*insert listeners here*/
+            /*TODO: create creating new files functionality*/
         });
-        /*insert more listeners here*/  
+        /*TODO: display settings and personalization settings*/  
     }
     if (e.target.id == 'start-menu') {
         rclick.insertAdjacentHTML('afterbegin', `
             <div id="startSettings"><pre>&#57621</pre><p>Start Settings</p></div>
         `);
         rclick.classList.add('tbRclick','acrylic');
-        /*insert listeners here*/
+        /*TODO: start settings*/
     }
     
     if (rclick.innerHTML !== '') {
@@ -820,7 +891,47 @@ window.onmessage = function(e) {
             createUserIcon(split[1]);
         break;
         case 'save':
-            const styles = {};
+            (async () => {
+                const db = await openDB();
+
+                const tx = db.transaction(["styles", "classes", "elements"], "readwrite");
+                const storeStyles = tx.objectStore("styles");
+                const storeClasses = tx.objectStore("classes");
+                const storeElements = tx.objectStore("elements");
+
+                // Clear old values (critical)
+                storeStyles.clear();
+                storeClasses.clear();
+                storeElements.clear();
+
+                document.querySelectorAll('*').forEach(el => {
+                    const path = getElementPath(el);
+
+                    // Save inline styles
+                    if (el.hasAttribute("style")) {
+                        storeStyles.put(el.getAttribute("style"), path);
+                    }
+
+                    //save icon size
+                    if (el.id === "icons") {
+                        storeClasses.put(el.className, path);
+                    }
+
+                    // Save .user-created elements
+                    if (el.classList.contains("user-created")) {
+                        const parentPath = getElementPath(el).split(' > ').slice(0, -1).join(' > ');
+                        const index = getElementPath(el);
+                        storeElements.put({
+                            parentPath,
+                            index,
+                            outerHTML: el.outerHTML
+                        }, path);
+                    }
+                });
+
+                await tx.complete;
+            })();
+            /*const styles = {};
             const classes = {};
             const userCreated = [];
 
@@ -839,18 +950,28 @@ window.onmessage = function(e) {
                 }
             });
 
-            // Save #desktop class
             classes['#icons'] = document.getElementById('icons').className;
 
             localStorage.setItem('savedStyles', JSON.stringify(styles));
             localStorage.setItem('savedClasses', JSON.stringify(classes));
-            localStorage.setItem('savedUserCreated', JSON.stringify(userCreated));
+            localStorage.setItem('savedUserCreated', JSON.stringify(userCreated));*/
         break;
         case 'reset':
-            localStorage.removeItem('savedStyles');
-            localStorage.removeItem('savedClasses');
-            localStorage.removeItem('savedUserCreated');
+            (async () => {
+                const db = await openDB();
+                const tx = db.transaction(["styles", "classes", "elements"], "readwrite");
+                tx.objectStore("styles").clear();
+                tx.objectStore("classes").clear();
+                tx.objectStore("elements").clear();
+            })();
         break;
+        case 'style':
+            let element = document.getElementById(split[1]).style
+            if (split[1] == 'desktop') {
+                element.backgroundImage = `url(${split[2]})`;
+            }
+        break;
+            
     }
 };
 //url query handler
@@ -858,7 +979,16 @@ if (location.search) {
     location.search.split('?').forEach((query) => {
         if (query) {
             if (query.split('.')[1] == 'url') {
-                openApp(document.getElementById(query.split('.')[0]));
+                try {
+                    openApp(document.getElementById(query.split('.')[0]));
+                } catch (error) {
+                    //temporary hopefully
+                    const template = document.createElement("template");
+                    template.innerHTML = `<div id="${query.split('.')[0]}" class="icon app single-instance" title-data="${query.split('.')[0]}">
+                                            <img src="assets/${query.split('.')[0]}.png">  
+                                          </div>`;
+                    openApp(template.content.firstElementChild);
+                }
             } else if (query.split('.')[1] !== undefined) {
                 (async () => {
                     const app = await createUserIcon(query);
@@ -866,5 +996,5 @@ if (location.search) {
                 })();
             }
         }
-    })
+    });
 }
