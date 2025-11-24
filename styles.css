@@ -605,8 +605,6 @@ select:hover {
 
 #buttonsHolder {
     width: 300px;
-    /*why no scroll*/
-    overflow-y: scroll;
 }
 #buttonsHolder div {
     width: 262px;
@@ -625,10 +623,6 @@ select:hover {
 }
 #menusHolder h2 a:not(:hover) {
     opacity: 0.8;
-}
-/*why no scroll*/
-#menusHolder > div {
-    overflow-y: scroll;
 }
 #menusHolder > div, #menusHolder > div > div {
     display: none;
