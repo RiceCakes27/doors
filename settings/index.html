@@ -52,6 +52,16 @@
                 </div>
                 <div id="system">
                     <h2>System</h2>
+                    <div class="active">
+                        <div class="vertical-box">
+                            <div id="displayButton" class="button" onclick="openMenu('Display')">
+                                <p>Display<br><span>Monitors, brightness, night light, display profile</span></p><p>></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Display">
+                        <p>teehee nothing here yet</p>
+                    </div>
                 </div>
                 <div id="bluetooth">
                     <h2>Bluetooth & devices</h2>
@@ -64,8 +74,35 @@
                     <div class="active">
                         <div id="desktop"></div>
                         <div class="vertical-box">
-                            <div class="button" onclick="openMenu('Background')">
-                                <p>Background</p><p>></p>
+                            <div id="backgroundButton" class="button" onclick="openMenu('Background')">
+                                <p>Background<br><span>Background image, color, slideshow</span></p><p>></p>
+                            </div>
+                            <div id="colorsButton" class="button" onclick="openMenu('Colors')">
+                                <p>Colors<br><span>Accent color, transparency effects, color theme</span></p><p>></p>
+                            </div>
+                            <div id="themesButton" class="button" onclick="openMenu('Themes')">
+                                <p>Themes<br><span>Install, create, manage</span></p><p>></p>
+                            </div>
+                            <div id="lightingButton" class="button" onclick="openMenu('Lighting')">
+                                <p>Dynamic Lighting<br><span>Connected devices, effects, app settings</span></p><p>></p>
+                            </div>
+                            <div id="lockscreenButton" class="button" onclick="openMenu('Lockscreen')">
+                                <p>Lock Screen<br><span>Lock screen images, apps, animations</span></p><p>></p>
+                            </div>
+                            <div id="textinputButton" class="button" onclick="openMenu('Textinput')">
+                                <p>Text input<br><span>Touch keyboard, voice typing, emoji and more, input method editor</span></p><p>></p>
+                            </div>
+                            <div id="startButton" class="button" onclick="openMenu('Start')">
+                                <p>Start<br><span>Recent apps and items, folders</span></p><p>></p>
+                            </div>
+                            <div id="taskbarButton" class="button" onclick="openMenu('Taskbar')">
+                                <p>Taskbar<br><span>Taskbar behaviors, system pins</span></p><p>></p>
+                            </div>
+                            <div id="fontsButton" class="button" onclick="openMenu('Fonts')">
+                                <p>Fonts<br><span>Install, manage</span></p><p>></p>
+                            </div>
+                            <div id="deviceusageButton" class="button" onclick="openMenu('Deviceusage')">
+                                <p>Device usage<br><span>Select all the ways you plan to use your device to get personalized tips, ads, and recommendations within Microsoft experiences.</span></p><p>></p>
                             </div>
                         </div>
                     </div>
@@ -101,6 +138,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <!--put other menus here-->
+                    <div id="Start">
+                        <p>teehee nothing here yet</p>
+                    </div>
+                    <div id="Taskbar">
+                        <p>teehee nothing here yet</p>
                     </div>
                 </div>
                 <div id="apps">
@@ -149,6 +193,7 @@
         }
         function openMenu(menuId) {
             const menu = document.getElementById(menuId);
+            if (menu == null) return;
             const button = document.getElementById(`${menuId}Button`);
             const activeMenu = document.querySelector('#menusHolder > div.active');
             const activeButton = document.querySelector('#buttonsHolder > div.active');
@@ -173,28 +218,37 @@
             menu.classList.add('active');
         }
         function pickImage() {
-            return new Promise((resolve, reject) => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
 
-                input.onchange = () => {
-                    const file = input.files[0];
-                    if (!file) {
-                        reject('No file selected');
-                        return;
-                    }
+            input.onchange = () => {
+                const file = input.files[0];
+                if (!file) {
+                    reject('No file selected');
+                    return;
+                }
 
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        sendMsg("style desktop "+reader.result); // base64 data URL
-                        changeStylesheetRule(document.styleSheets[0], "#desktop", "background-image", `url(${reader.result})`);
-                    }
-                    reader.onerror = () => reject('Failed to read file');
-                    reader.readAsDataURL(file);
-                };
+                const reader = new FileReader();
+                reader.onload = () => {
+                    sendMsg("style desktop "+reader.result); // base64 data URL
+                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background-image", `url(${reader.result})`);
+                }
+                reader.onerror = () => reject('Failed to read file');
+                reader.readAsDataURL(file);
+            };
 
-                input.click();
+            input.click();
+        }
+        //url query handler
+        if (location.search) {
+            //i do realize theres no point to allow multiple queries but whatevs
+            location.search.split('?').forEach((query) => {
+                if (query) {
+                    query.split('.').forEach((menu) => {
+                        document.getElementById(menu+'Button').click();
+                    });
+                }
             });
         }
     </script>

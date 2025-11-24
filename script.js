@@ -3,6 +3,7 @@ const icons = document.getElementById('icons');
 const taskbar = document.getElementById('taskbar');
 
 let tempClipboard = [];
+let cut = false;
 
 function updateClock() {
     let now = new Date();
@@ -13,6 +14,22 @@ function updateClock() {
 //start clock then start updating it every second
 updateClock();
 setInterval(updateClock, 1000);
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open("UIStorage", 1);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            db.createObjectStore("styles");
+            db.createObjectStore("classes");
+            db.createObjectStore("elements");
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
 
 //restore saved stuff
 async function restoreStyles() {
@@ -65,22 +82,6 @@ async function restoreStyles() {
         };
     });
 };
-
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open("UIStorage", 1);
-
-        request.onupgradeneeded = () => {
-            const db = request.result;
-            db.createObjectStore("styles");
-            db.createObjectStore("classes");
-            db.createObjectStore("elements");
-        };
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
 
 function getElementPath(el) {
     if (el === document.body) return 'body';
@@ -281,7 +282,7 @@ async function createUserIcon(split) {
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
     if (el.classList.contains('single-instance') && document.querySelector('#'+el.id+'-app') !== null) {
-        //document.querySelector('#'+el.id+'-app').focus(); wish it was this easy
+        document.querySelector('#'+el.id+'-app').lastElementChild.src = url;
         let tbIcon = document.querySelector('#'+el.id+'.taskbar-icon');
         tbIcon.classList.add('active');
         setTopWindow(document.getElementById(el.id+'-app'));
@@ -460,6 +461,17 @@ function openApp(el, url=el.id) {
         });
     }
 }
+
+//by simple i mean this is so stupid
+function openAppSimple(app, name = app, url = undefined) {
+    //temporary hopefully
+    const template = document.createElement("template");
+    template.innerHTML = `<div id="${app}" class="icon app single-instance" title-data="${name}"${url ? `url=${url}` : ''}>
+                            <img src="assets/${app}.png">  
+                            </div>`;
+    openApp(template.content.firstElementChild, url);
+}
+
 //handler for desktop icons, double click to open & selection
 function createIcon(el, url) {
     let clicks = 0;
@@ -693,13 +705,16 @@ document.oncontextmenu = function(e) {
             document.getElementById('sendTo').addEventListener('click', () => {
                 //TODO: make send to menu
                 rclick.remove();
-            });
-            document.getElementById('cut').addEventListener('click', () => {
-                //TODO: make cutting functionality
-                rclick.remove();
             });*/
+            document.getElementById('cut').addEventListener('click', () => {
+                tempClipboard = [], cut = true;
+                document.querySelectorAll('.selected').forEach((selectedItem) => {
+                    tempClipboard.push(getElementPath(selectedItem));
+                });
+                rclick.remove();
+            });
             document.getElementById('copy').addEventListener('click', () => {
-                tempClipboard = [];
+                tempClipboard = [], cut = false;
                 document.querySelectorAll('.selected').forEach((selectedItem) => {
                     tempClipboard.push(getElementPath(selectedItem));
                 });
@@ -756,7 +771,11 @@ document.oncontextmenu = function(e) {
             <div id="taskbarSettings"><pre>&#57621</pre><p>Taskbar Settings</p></div>
         `);
         rclick.classList.add('tbRclick','acrylic');
-        //TODO: task manager and taskbar settings
+        //TODO: task manager
+        document.getElementById('taskbarSettings').addEventListener('click', () => {
+            openAppSimple('settings', 'Settings', 'settings/?personalize.taskbar');
+            rclick.remove();
+        });
     }
     if (e.target == desktop) {
         rclick.insertAdjacentHTML('afterbegin', `
@@ -826,10 +845,40 @@ document.oncontextmenu = function(e) {
             paste.addEventListener('click', () => {
                 tempClipboard.forEach((entry) => {
                     const og = document.querySelector(entry);
+                    const ogText = og.children[1].textContent;
                     const url = og.getAttribute('url') !== null ? og.getAttribute('url') : undefined;
-                    icons.insertAdjacentHTML('beforeend', `<div class="icon app user-created" id="${og.id}" title-data="${og.getAttribute('title-data')}" ${url ==! undefined ? `url="${url}"` : ''}><img src="${og.children[0].src}"/><p>${og.getAttribute('title-data')} - Copy</p></div>`);
+                    const sameUrlElems = document.querySelectorAll(`[url=${url}]`);
+                    let copies = '';
+                    //this is definitely err not good TODO: fix this
+                    sameUrlElems.forEach((element) => {
+                        if (cut) {
+                            try {
+                                document.getElementById(og.id).remove();
+                            } catch (error) {
+                                //its joever
+                            }
+                        } else {
+                        if (element.children[1].textContent == ogText) {
+                            copies += ' - Copy';
+                        } else {
+                            let copyAmmount = 0;
+                            document.querySelectorAll(`[url=${url}] :nth-child(2)`).forEach((text) => {
+                                const elemText = text.textContent;
+                                if (elemText == ogText || elemText.slice(0, -7) == ogText || elemText.slice(0, -11) == ogText) {
+                                    copyAmmount++;
+                                }
+                            });
+                            copies = ` - Copy${copyAmmount == 1 ? '' : ` (${copyAmmount})`}`;
+                        }
+                        }
+                    });
+                    icons.insertAdjacentHTML('beforeend', `<div class="icon app selected user-created" id="${og.id}${cut ? '' : sameUrlElems.length}" title-data="${og.getAttribute('title-data')}" ${url !== undefined ? `url="${url}"` : ''}><img src="${og.children[0].src}"/><p>${ogText}${copies}</p></div>`);
                     createIcon(icons.lastChild, url);
-                })
+                });
+                if (cut) {
+                    tempClipboard = [];
+                    cut = false;
+                }
                 rclick.remove();
             });
         }
@@ -845,14 +894,25 @@ document.oncontextmenu = function(e) {
             `, rclick, newFile);
             /*TODO: create creating new files functionality*/
         });
-        /*TODO: display settings and personalization settings*/  
+        document.getElementById('displaySettings').addEventListener('click', () => {
+            openAppSimple('settings', 'Settings', 'settings/?system.display');
+            rclick.remove();
+        });
+        document.getElementById('personalize').addEventListener('click', () => {
+            openAppSimple('settings', 'Settings', 'settings/?personalize.background');
+            rclick.remove();
+        });
     }
     if (e.target.id == 'start-menu') {
         rclick.insertAdjacentHTML('afterbegin', `
             <div id="startSettings"><pre>&#57621</pre><p>Start Settings</p></div>
         `);
         rclick.classList.add('tbRclick','acrylic');
-        /*TODO: start settings*/
+        document.getElementById('startSettings').addEventListener('click', () => {
+            openAppSimple('settings', 'Settings', 'settings/?personalize.start');
+            rclick.remove();
+            e.target.remove();
+        });
     }
     
     if (rclick.innerHTML !== '') {
@@ -925,36 +985,12 @@ window.onmessage = function(e) {
                             parentPath,
                             index,
                             outerHTML: el.outerHTML
-                        }, path);
+                        });
                     }
                 });
 
                 await tx.complete;
             })();
-            /*const styles = {};
-            const classes = {};
-            const userCreated = [];
-
-            document.body.querySelectorAll('*').forEach(el => {
-                // Save inline styles
-                if (el.hasAttribute('style')) {
-                    styles[getElementPath(el)] = el.getAttribute('style');
-                }
-
-                // Save .user-created elements completely
-                if (el.classList.contains('user-created')) {
-                    userCreated.push({
-                        path: getElementPath(el),
-                        outerHTML: el.outerHTML
-                    });
-                }
-            });
-
-            classes['#icons'] = document.getElementById('icons').className;
-
-            localStorage.setItem('savedStyles', JSON.stringify(styles));
-            localStorage.setItem('savedClasses', JSON.stringify(classes));
-            localStorage.setItem('savedUserCreated', JSON.stringify(userCreated));*/
         break;
         case 'reset':
             (async () => {
@@ -982,12 +1018,7 @@ if (location.search) {
                 try {
                     openApp(document.getElementById(query.split('.')[0]));
                 } catch (error) {
-                    //temporary hopefully
-                    const template = document.createElement("template");
-                    template.innerHTML = `<div id="${query.split('.')[0]}" class="icon app single-instance" title-data="${query.split('.')[0]}">
-                                            <img src="assets/${query.split('.')[0]}.png">  
-                                          </div>`;
-                    openApp(template.content.firstElementChild);
+                    openAppSimple(query.split('.')[0]);
                 }
             } else if (query.split('.')[1] !== undefined) {
                 (async () => {
