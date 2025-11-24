@@ -1002,10 +1002,8 @@ window.onmessage = function(e) {
             })();
         break;
         case 'style':
-            let element = document.getElementById(split[1]).style
-            if (split[1] == 'desktop') {
-                element.backgroundImage = `url(${split[2]})`;
-            }
+            //document.getElementById(split[1]).style[split[2]] = split[3];
+            document.getElementById(split[1]).style.setProperty(split[2], split[3], split[4]);
         break;
             
     }

@@ -112,7 +112,7 @@
                             <div class="dropdown">
                                 <div class="button">
                                     <p>Personalize your background<br><span>A picture background applies to your current desktop. Solid color or slideshow backgrounds apply to all your desktops.</span></p>
-                                    <select>
+                                    <select id="backgroundDropdownButton" onchange="openDropdown('backgroundDropdownButton')">
                                         <option value="picture">Picture</option>
                                         <option value="color">Solid color</option>
                                         <option value="slideshow">Slideshow</option>
@@ -120,7 +120,7 @@
                                     </select>
                                     <p>^</p>
                                 </div>
-                                <div id="backgroundDropdown">
+                                <div id="pictureDropdown" class="dropdownMenu active">
                                     <div></div>
                                     <div class="horizontal-box">
                                         <p>Choose a photo</p>
@@ -135,6 +135,25 @@
                                             <option value="span">Span</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div id="colorDropdown" class="dropdownMenu">
+                                    <div></div>
+                                    <div class="horizontal-box">
+                                        <p>Choose your background color</p>
+                                    </div>
+                                    <div></div>
+                                    <div class="horizontal-box">
+                                        <p>Custom colors</p>
+                                        <div class="button" onclick="backgroundColor()">
+                                            <p>View colors</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="slideshowDropdown" class="dropdownMenu">
+
+                                </div>
+                                <div id="spotlightDropdown" class="dropdownMenu">
+
                                 </div>
                             </div>
                         </div>
@@ -217,6 +236,12 @@
             }
             menu.classList.add('active');
         }
+        function openDropdown(dropdownn) {
+            const dropdown = document.getElementById(dropdownn);
+            const dropdownParent = dropdown.parentElement.parentElement
+            dropdownParent.querySelector('.active').classList.remove('active');
+            document.getElementById(dropdown.value+'Dropdown').classList.add('active');
+        }
         function pickImage() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -231,13 +256,26 @@
 
                 const reader = new FileReader();
                 reader.onload = () => {
-                    sendMsg("style desktop "+reader.result); // base64 data URL
+                    sendMsg("style desktop background-image url("+reader.result+")"); // base64 data URL
+                    sendMsg("style desktop background-color none");
+                    
                     changeStylesheetRule(document.styleSheets[0], "#desktop", "background-image", `url(${reader.result})`);
                 }
                 reader.onerror = () => reject('Failed to read file');
                 reader.readAsDataURL(file);
             };
 
+            input.click();
+        }
+        function backgroundColor() {
+            const input = document.createElement('input');
+            input.type = 'color';
+
+            input.onchange = () => {
+                sendMsg("style desktop background-color "+input.value);
+                sendMsg("style desktop background-image none");
+            };
+            
             input.click();
         }
         //url query handler
