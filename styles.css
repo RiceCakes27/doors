@@ -10,13 +10,15 @@
     --bgcolor: 97, 97, 97;
 }
 
+* {
+    user-select: none;
+    scrollbar-color: #a0a0a0 #2d2d2d;
+}
+
 body {
     margin: 0;
     height: 100vh;
     background-color: #202020;
-}
-body * {
-    user-select: none;
 }
 
 #desktop {
@@ -417,14 +419,17 @@ select:hover {
     font-family: "Segoe Icons";
     pointer-events: none;
 }
-#rclick div:has(> p:nth-of-type(2)) p:last-child, .vertical-box div:has(> p:nth-of-type(2)) p:last-child {
+#rclick div:has(> p:nth-of-type(2)) p:last-child,
+.vertical-box div:has(> p:nth-of-type(2)) p:last-child,
+.vertical-box .button:has(> p:nth-of-type(2)) p:nth-child(3) {
     right: 10px;
+    font-family: "Segoe Icons";
 }
 #rclick div:empty {
     height: 1px;
     background-color: #36383b;
 }
-#rclick div[disabled] p {
+#rclick div[disabled] p, pre[disabled] {
     color: grey;
 }
 #rclick.tbRclick {
@@ -570,16 +575,34 @@ select:hover {
 .horizontal-spaced-box {
     display: flex;
     flex-direction: row;
-    column-gap: 10px;
-    height: 50px;
-    width: 100wh;
-    flex-wrap: wrap;
-    pointer-events: none;
+    column-gap: 3px;
+    background-color: #2c2c2c;
+    border-bottom: solid #3a3a3a 1px;
 }
-.horizontal-spaced-box p {
-    width: 25px;
-    height: 25px;
-    text-align: center;
+.horizontal-spaced-box pre {
+    margin: 17px;
+    font-family: "Segoe Icons";
+}
+
+#mainExplorer, #mainExplorer .horizontal-spaced-box, #bottomExplorer {
+    background-color: #191919;
+}
+#mainExplorer {
+    display: flex;
+    flex-direction: row;
+    height: calc(100% - 116.6px);
+}
+#explorerLeft, #explorerMiddle {
+    border-right: solid #3a3a3a 1px;
+}
+#explorerMiddle, #explorerRight {
+    border-left: solid #202020 1px;
+}
+#bottomExplorer {
+    position: fixed;
+    width: 100vw;
+    bottom: 0;
+    background-color: #1c1c1c;
 }
 
 #settingsMenuHolder {
@@ -590,17 +613,21 @@ select:hover {
     justify-content: left;
     flex-direction: row;
 }
+#settingsMenuHolder .button p {
+    font-size: 14px;
+}
+#settingsMenuHolder .button p span {
+    font-size: 12px;
+    opacity: 0.8;
+}
 #settingsMenuHolder .button:has(> *:nth-child(2):last-child) p:nth-child(1) {
     max-width: calc(100% - 75px);
     position: relative;
 }
-#settingsMenuHolder .button:has(> *:nth-child(3):last-child) p:nth-child(1) {
-    max-width: calc(100% - 200px);
+#settingsMenuHolder .button:has(> *:nth-child(3):last-child) p:nth-child(1),
+#settingsMenuHolder .button:has(> *:nth-child(4):last-child) p:nth-child(2) {
+    max-width: calc(100% - 230px);
     position: relative;
-}
-#settingsMenuHolder .button p span {
-    font-size: 11px;
-    opacity: 0.8;
 }
 
 #buttonsHolder {
@@ -608,7 +635,7 @@ select:hover {
 }
 #buttonsHolder div {
     width: 262px;
-    height: 32px;
+    height: 35px;
 }
 #buttonsHolder div:hover {
     background-color: rgba(var(--bgcolor), .15);
@@ -638,7 +665,7 @@ select:hover {
     background-color: rgba(var(--bgcolor), .15);
 }
 #menusHolder .vertical-box > * > .button:has(p), #menusHolder .vertical-box > .button:has(p) {
-    min-height: 40px;
+    min-height: 46px;
     height: fit-content;
     padding-bottom: 10px;
     padding-top: 10px;
@@ -648,7 +675,7 @@ select:hover {
 }
 #menusHolder #desktop {
     position: relative;
-    width: 300px;
+    width: 320px;
     height: auto;
     aspect-ratio: 16 / 9;
     border: solid 8px black;
@@ -656,15 +683,22 @@ select:hover {
     margin-bottom: 12px;
     background-attachment: local;
 }
+#menusHolder .button pre {
+    font-family: "Segoe Icons";
+    text-align: center;
+    font-size: 21px;
+    margin-left: 19.5px;
+    position: absolute;
+}
+#menusHolder .button:has(*:nth-child(2)) p:first-of-type {
+    margin-left: 60px;
+}
 
 .vertical-box select {
     position: absolute;
     right: 26px;
     height: 28px;
     width: 125px;
-}
-.vertical-box .button:has(> p:nth-of-type(2)) p:nth-child(3) {
-    right: 10px;
 }
 
 #settingsMenuHolder .dropdown div div .button {
@@ -709,7 +743,7 @@ select:hover {
     height: auto;
 }
 .dropdown div:not(.button) > p {
-    margin-left: 3em;
+    margin-left: 60px;
 }
 .dropdown div:not(.button) {
     flex-direction: column;

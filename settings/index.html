@@ -55,7 +55,7 @@
                     <div class="active">
                         <div class="vertical-box">
                             <div id="displayButton" class="button" onclick="openMenu('Display')">
-                                <p>Display<br><span>Monitors, brightness, night light, display profile</span></p><p>></p>
+                                <pre>&#59384;</pre><p>Display<br><span>Monitors, brightness, night light, display profile</span></p><p>&#57963;</p>
                             </div>
                         </div>
                     </div>
@@ -75,34 +75,34 @@
                         <div id="desktop"></div>
                         <div class="vertical-box">
                             <div id="backgroundButton" class="button" onclick="openMenu('Background')">
-                                <p>Background<br><span>Background image, color, slideshow</span></p><p>></p>
+                                <pre>&#59675;</pre><p>Background<br><span>Background image, color, slideshow</span></p><p>&#57963;</p>
                             </div>
                             <div id="colorsButton" class="button" onclick="openMenu('Colors')">
-                                <p>Colors<br><span>Accent color, transparency effects, color theme</span></p><p>></p>
+                                <pre>&#58033;</pre><p>Colors<br><span>Accent color, transparency effects, color theme</span></p><p>&#57963;</p>
                             </div>
                             <div id="themesButton" class="button" onclick="openMenu('Themes')">
-                                <p>Themes<br><span>Install, create, manage</span></p><p>></p>
+                                <pre>&#59249;</pre><p>Themes<br><span>Install, create, manage</span></p><p>&#57963;</p>
                             </div>
                             <div id="lightingButton" class="button" onclick="openMenu('Lighting')">
-                                <p>Dynamic Lighting<br><span>Connected devices, effects, app settings</span></p><p>></p>
+                                <pre>?</pre><p>Dynamic Lighting<br><span>Connected devices, effects, app settings</span></p><p>&#57963;</p>
                             </div>
                             <div id="lockscreenButton" class="button" onclick="openMenu('Lockscreen')">
-                                <p>Lock Screen<br><span>Lock screen images, apps, animations</span></p><p>></p>
+                                <pre>&#60991;</pre><p>Lock Screen<br><span>Lock screen images, apps, animations</span></p><p>&#57963;</p>
                             </div>
                             <div id="textinputButton" class="button" onclick="openMenu('Textinput')">
-                                <p>Text input<br><span>Touch keyboard, voice typing, emoji and more, input method editor</span></p><p>></p>
+                                <pre>&#57668;</pre><p>Text input<br><span>Touch keyboard, voice typing, emoji and more, input method editor</span></p><p>&#57963;</p>
                             </div>
                             <div id="startButton" class="button" onclick="openMenu('Start')">
-                                <p>Start<br><span>Recent apps and items, folders</span></p><p>></p>
+                                <pre>&#57828;</pre><p>Start<br><span>Recent apps and items, folders</span></p><p>&#57963;</p>
                             </div>
                             <div id="taskbarButton" class="button" onclick="openMenu('Taskbar')">
-                                <p>Taskbar<br><span>Taskbar behaviors, system pins</span></p><p>></p>
+                                <pre>&#59227;</pre><p>Taskbar<br><span>Taskbar behaviors, system pins</span></p><p>&#57963;</p>
                             </div>
                             <div id="fontsButton" class="button" onclick="openMenu('Fonts')">
-                                <p>Fonts<br><span>Install, manage</span></p><p>></p>
+                                <pre>?</pre><p>Fonts<br><span>Install, manage</span></p><p>&#57963;</p>
                             </div>
                             <div id="deviceusageButton" class="button" onclick="openMenu('Deviceusage')">
-                                <p>Device usage<br><span>Select all the ways you plan to use your device to get personalized tips, ads, and recommendations within Microsoft experiences.</span></p><p>></p>
+                                <pre>&#60534;</pre><p>Device usage<br><span>Select all the ways you plan to use your device to get personalized tips, ads, and recommendations within Microsoft experiences.</span></p><p>&#57963;</p>
                             </div>
                         </div>
                     </div>
@@ -110,15 +110,15 @@
                         <div id="desktop"></div>
                         <div class="vertical-box">
                             <div class="dropdown">
-                                <div class="button">
-                                    <p>Personalize your background<br><span>A picture background applies to your current desktop. Solid color or slideshow backgrounds apply to all your desktops.</span></p>
-                                    <select id="backgroundDropdownButton" onchange="openDropdown('backgroundDropdownButton')">
+                                <div class="button" onclick="setDropdown('backgroundDropdownButton', true)">
+                                    <pre>&#59675;</pre><p>Personalize your background<br><span>A picture background applies to your current desktop. Solid color or slideshow backgrounds apply to all your desktops.</span></p>
+                                    <select id="backgroundDropdownButton" onchange="setDropdown('backgroundDropdownButton')">
                                         <option value="picture">Picture</option>
                                         <option value="color">Solid color</option>
                                         <option value="slideshow">Slideshow</option>
                                         <option value="spotlight">Doors spotlight</option>
                                     </select>
-                                    <p>^</p>
+                                    <p>&#59757;</p>
                                 </div>
                                 <div id="pictureDropdown" class="dropdownMenu active">
                                     <div></div>
@@ -132,7 +132,12 @@
                                     <div class="horizontal-box">
                                         <p>Choose a fit for your desktop image</p>
                                         <select>
-                                            <option value="span">Span</option>
+                                            <option value="fill">Fill</option>
+                                            <option value="fit">Fit</option>
+                                            <option value="stretch">Stretch</option>
+                                            <option value="tile">Tile</option>
+                                            <option value="center">Center</option>
+                                            <option selected value="span">Span</option>
                                         </select>
                                     </div>
                                 </div>
@@ -218,7 +223,7 @@
             const activeButton = document.querySelector('#buttonsHolder > div.active');
             if (activeMenu.contains(menu) && button !== activeButton) {
                 //sub menu
-                document.querySelector('#menusHolder > div.active > div.active').classList.remove('active');
+                activeMenu.querySelector(':scope > div.active').classList.remove('active');
 
                 activeMenu.firstElementChild.innerHTML = `<a onclick="openMenu('${activeMenu.id}')">${activeMenu.firstElementChild.textContent}</a> > ${menuId}`;
             } else {
@@ -227,20 +232,30 @@
 
                 button.classList.add('active');
                 //sub menu stuff
-                if (document.querySelector(`#${menuId} > :nth-child(2)`)) {
-                    document.querySelector(`#${menuId} > div.active`).classList.remove('active');
-
-                    document.querySelector(`#${menuId} > :nth-child(2)`).classList.add('active');
+                if (menu.querySelector(':scope > :nth-child(2)')) {
+                    menu.querySelector(':scope > div.active').classList.remove('active');
+                    menu.querySelector(':scope > :nth-child(2)').classList.add('active');
                 }
                 menu.firstElementChild.textContent = document.querySelector('#buttonsHolder > div.active').firstElementChild.textContent;
             }
             menu.classList.add('active');
         }
-        function openDropdown(dropdownn) {
+        function setDropdown(dropdownn, toggle) {
             const dropdown = document.getElementById(dropdownn);
-            const dropdownParent = dropdown.parentElement.parentElement
-            dropdownParent.querySelector('.active').classList.remove('active');
-            document.getElementById(dropdown.value+'Dropdown').classList.add('active');
+            const dropdownParent = dropdown.parentElement;
+            const activeDropdown = dropdownParent.parentElement.querySelector('.active');
+            if (toggle) {
+                if (activeDropdown) {
+                    activeDropdown.classList.remove('active');
+                    dropdownParent.lastElementChild.innerHTML = '&#57896;'
+                } else {
+                    document.getElementById(dropdown.value+'Dropdown').classList.add('active');
+                    dropdownParent.lastElementChild.innerHTML = '&#59757;'
+                }
+            } else if (activeDropdown) {
+                activeDropdown.classList.remove('active');
+                document.getElementById(dropdown.value+'Dropdown').classList.add('active');
+            }
         }
         function pickImage() {
             const input = document.createElement('input');
@@ -278,6 +293,9 @@
             
             input.click();
         }
+        document.querySelector('.button select').addEventListener('click', e => {
+            e.stopPropagation();
+        });
         //url query handler
         if (location.search) {
             //i do realize theres no point to allow multiple queries but whatevs

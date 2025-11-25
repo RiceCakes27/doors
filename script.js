@@ -669,7 +669,7 @@ document.oncontextmenu = function(e) {
                 <div id="share"><p>Share</p></div>
                 <div id="restore"><p>Restore previous versions</p></div>
                 <div></div>
-                <div id="sendTo"><p>Send to</p><p>></p></div>
+                <div id="sendTo"><p>Send to</p><p>&#59764;</p></div>
                 <div></div>
                 <div id="cut"><p>Cut</p></div>
                 <div id="copy"><p>Copy</p></div>
@@ -779,13 +779,13 @@ document.oncontextmenu = function(e) {
     }
     if (e.target == desktop) {
         rclick.insertAdjacentHTML('afterbegin', `
-            <div id="view"><p>View</p><p>></p></div>
-            <div id="sort"><p>Sort by</p><p>></p></div>
+            <div id="view"><p>View</p><p>&#59764;</p></div>
+            <div id="sort"><p>Sort by</p><p>&#59764;</p></div>
             <div id="refresh"><p>Refresh</p></div>
             <div></div>
             <div id="paste" ${tempClipboard.length > 0 ? '' : 'disabled'}><p>Paste</p></div>
             <div></div>
-            <div id="new"><p>New</p><p>></p></div>
+            <div id="new"><p>New</p><p>&#59764;</p></div>
             <div></div>
             <div id="displaySettings"><p>Display settings</p></div>
             <div id="personalize"><p>Personalize</p></div>
@@ -806,10 +806,10 @@ document.oncontextmenu = function(e) {
                 <div id="medium">${icons.classList.contains('medium') ? '<pre>●</pre>' : ''}<p>Medium icons</p></div>
                 <div id="small">${icons.classList.contains('small') ? '<pre>●</pre>' : ''}<p>Small icons</p></div>
                 <div></div>
-                <div id="autoArrange"><pre>✓</pre><p>Auto arrange icons</p></div>
-                <div id="alignIcons"><pre>✓</pre><p>Align icons to grid</p></div>
+                <div id="autoArrange"><pre>&#63372;</pre><p>Auto arrange icons</p></div>
+                <div id="alignIcons"><pre>&#63372;</pre><p>Align icons to grid</p></div>
                 <div></div>
-                <div id="showIcons">${icons.style.display !== 'none' ? '<pre>✓</pre>' : ''}<p>Show desktop icons</p></div>
+                <div id="showIcons">${icons.style.display !== 'none' ? '<pre>&#63372;</pre>' : ''}<p>Show desktop icons</p></div>
             `, rclick, view);
             function setIconSize(click) {
                 icons.className = click.target.id;
@@ -899,7 +899,7 @@ document.oncontextmenu = function(e) {
             rclick.remove();
         });
         document.getElementById('personalize').addEventListener('click', () => {
-            openAppSimple('settings', 'Settings', 'settings/?personalize.background');
+            openAppSimple('settings', 'Settings', 'settings/?personalize');
             rclick.remove();
         });
     }
