@@ -720,7 +720,7 @@ select:hover {
     display: inline;
 }
 #menusHolder .vertical-box .dropdown > div > div > p {
-    max-width: calc(100% - 200px);
+    max-width: calc(100% - 230px);
 }
 .dropdown div:empty {
     height: 1px;
