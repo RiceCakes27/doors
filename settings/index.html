@@ -109,10 +109,10 @@
                     <div id="Background">
                         <div id="desktop"></div>
                         <div class="vertical-box">
-                            <div class="dropdown">
-                                <div class="button" onclick="setDropdown('backgroundDropdownButton', true)">
+                            <div id="backgroundDropdown" class="dropdown">
+                                <div class="button" onclick="setDropdown('backgroundDropdown', true)">
                                     <pre>&#59675;</pre><p>Personalize your background<br><span>A picture background applies to your current desktop. Solid color or slideshow backgrounds apply to all your desktops.</span></p>
-                                    <select id="backgroundDropdownButton" onchange="setDropdown('backgroundDropdownButton')">
+                                    <select id="backgroundDropdownButton" onchange="setDropdown('backgroundDropdown')">
                                         <option value="picture">Picture</option>
                                         <option value="color">Solid color</option>
                                         <option value="slideshow">Slideshow</option>
@@ -159,6 +159,28 @@
                                 </div>
                                 <div id="spotlightDropdown" class="dropdownMenu">
 
+                                </div>
+                            </div>
+                            <h5>Related settings</h5>
+                            <div class="button" onclick="openMenu('accesibility')">
+                                <pre>?</pre><p>Contrast Themes<br><span>Color themes for low vision, light sensitivity</span></p><p>&#57963;</p>
+                            </div>
+                            <h5>Related support</h5>
+                            <div id="backgroundHelpDropdown" class="dropdown help">
+                                <div class="button" onclick="setDropdown('backgroundHelpDropdown', true)">
+                                    <pre>?</pre><p>Help with Background</p><p>&#59757;</p>
+                                </div>
+                                <div class="dropdownMenu active">
+                                    <div></div>
+                                    <div class="horizontal-box">
+                                        <a>Switching to a dark background theme</a>
+                                    </div>
+                                    <div class="horizontal-box">
+                                        <a>Showing desktop icons</a>
+                                    </div>
+                                    <div class="horizontal-box">
+                                        <a>Finding new themes</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -242,19 +264,25 @@
         }
         function setDropdown(dropdownn, toggle) {
             const dropdown = document.getElementById(dropdownn);
-            const dropdownParent = dropdown.parentElement;
-            const activeDropdown = dropdownParent.parentElement.querySelector('.active');
+            const dropdownSelector = dropdown.querySelector('select');
+            const dropdownArrow = dropdown.firstElementChild.lastElementChild;
+            const activeDropdown = dropdown.querySelector('.active');
+            const dropdownToSet = dropdownSelector ? dropdown.querySelector('#'+dropdownSelector.value+'Dropdown') : null;
             if (toggle) {
                 if (activeDropdown) {
                     activeDropdown.classList.remove('active');
-                    dropdownParent.lastElementChild.innerHTML = '&#57896;'
+                    dropdownArrow.innerHTML = '&#57896;';
                 } else {
-                    document.getElementById(dropdown.value+'Dropdown').classList.add('active');
-                    dropdownParent.lastElementChild.innerHTML = '&#59757;'
+                    if (dropdownToSet) {
+                        dropdownToSet.classList.add('active');
+                    } else {
+                        dropdown.children[1].classList.add('active');
+                    }
+                    dropdownArrow.innerHTML = '&#59757;';
                 }
             } else if (activeDropdown) {
                 activeDropdown.classList.remove('active');
-                document.getElementById(dropdown.value+'Dropdown').classList.add('active');
+                dropdownToSet.classList.add('active');
             }
         }
         function pickImage() {

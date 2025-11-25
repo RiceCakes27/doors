@@ -30,7 +30,7 @@ body {
     background-attachment: fixed;
 }
 
-p, pre, :not(form) > input, [title-data], textarea, select {
+p, a, pre, :not(form) > input, [title-data], textarea, select {
     color: white;
     font-size: 12px;
     font-family: 'Segoe UI', sans-serif;
@@ -46,11 +46,14 @@ h5, h4, h3, h2, h1 {
     margin: 0;
 }
 
+h2 a {
+    font-size: inherit;
+}
+
 select {
     background-color: rgba(var(--bgcolor), 0.3);
     border: none;
     border-radius: 4px;
-    pointer-events: fill;
 }
 select:hover {
     background-color: rgba(var(--bgcolor), 0.45);
@@ -58,7 +61,7 @@ select:hover {
 
 #taskbar, #taskbar-apps, #taskbar-icons, .taskbar-icon,
 #start-button, #search-button, #controls-button, .window-buttons,
-.icon, #rclick, .search-bar, .menu > div, .vertical-box {
+.icon, #rclick, .search-bar, .menu > div {
     display: flex;
     align-items: center;
 }
@@ -467,9 +470,9 @@ select:hover {
     border-radius: 0;
 }
 
-@keyframes menu {
+@keyframes up {
     0% {
-        transform: translateY(102%);
+        transform: translateY(var(--startingY));
     }
     100% {
         transform: translateY(0);
@@ -485,7 +488,8 @@ select:hover {
     border: solid 1px rgba(50, 63, 83, 0.6);
     border-radius: 10px;
     z-index: 97;
-    animation: menu 0.15s;
+    --startingY: 102%;
+    animation: up 0.15s;
     box-shadow: -1px 4px 10px 0px rgba(0, 0, 0, 0.45);
 }
 .menu.close {
@@ -509,7 +513,7 @@ select:hover {
 .menu .button, .button.active {
     background-color: rgba(var(--bgcolor), 0.2);
 }
-.button, .horizontal-box {
+.button {
     display: flex;
     height: 24px;
     width: 45px;
@@ -613,15 +617,16 @@ select:hover {
     justify-content: left;
     flex-direction: row;
 }
-#settingsMenuHolder .button p {
-    font-size: 14px;
+#settingsMenuHolder div :is(p, select) {
+    font-size: 13px;
 }
 #settingsMenuHolder .button p span {
     font-size: 12px;
     opacity: 0.8;
 }
-#settingsMenuHolder .button:has(> *:nth-child(2):last-child) p:nth-child(1) {
-    max-width: calc(100% - 75px);
+#settingsMenuHolder .button:has(> *:nth-child(2):last-child) p:nth-child(1),
+#menusHolder .vertical-box > .button:has(p) p:first-of-type {
+    max-width: calc(100% - 100px);
     position: relative;
 }
 #settingsMenuHolder .button:has(> *:nth-child(3):last-child) p:nth-child(1),
@@ -632,6 +637,7 @@ select:hover {
 
 #buttonsHolder {
     width: 300px;
+    background-color: #202020;;
 }
 #buttonsHolder div {
     width: 262px;
@@ -648,11 +654,24 @@ select:hover {
 #menusHolder h2{
     margin-bottom: 20px;
 }
+#menusHolder h5 {
+    margin-top: 34px;
+    margin-left: 2px;
+    margin-bottom: 10px;
+}
 #menusHolder h2 a:not(:hover) {
     opacity: 0.8;
 }
 #menusHolder > div, #menusHolder > div > div {
     display: none;
+}
+#menusHolder > div > div {
+    --startingY: 10%;
+    animation: up .1s ease-out;
+}
+#menusHolder > div > div.swipeleft {
+    transform: translateX(-102%);
+    transition: all .25s ease-in;
 }
 #menusHolder > div.active, #menusHolder > div > div.active {
     display: block;
@@ -710,6 +729,18 @@ select:hover {
     justify-content: center;
     margin: 0;
 }
+#menusHolder .dropdown.help:has(div.active) {
+    border-radius: 5px 5px 0 0;
+}
+#menusHolder .dropdown.help .horizontal-box {
+    margin-bottom: 8px;
+}
+#menusHolder .dropdown.help .horizontal-box a {
+    font-size: 13px;
+}
+#menusHolder .dropdown.help .horizontal-box:last-child {
+    margin-bottom: 20px;
+}
 #menusHolder .vertical-box .dropdown {
     display: flex;
     flex-direction: column;
@@ -739,10 +770,12 @@ select:hover {
 .dropdown > div {
     margin: 0;
     width: 100%;
-    border-radius: 5px 5px 0 0;
     height: auto;
 }
-.dropdown div:not(.button) > p {
+.dropdown:has(.active) > div {
+    border-radius: 5px 5px 0 0;
+}
+.dropdown div:not(.button) > :is(p, a) {
     margin-left: 60px;
 }
 .dropdown div:not(.button) {
@@ -754,6 +787,17 @@ select:hover {
 .dropdown .horizontal-box {
     align-items: normal;
     margin-bottom: 12px;
+    justify-content: center;
+}
+.dropdown a {
+    color: #8ed8ea;
+    text-decoration: none;
+    border-radius: 4px;
+    width: fit-content;
+}
+.dropdown a:hover {
+    cursor: pointer;
+    background-color: rgba(var(--bgcolor), 0.3);
 }
 
 .dropdownMenu:not(.active) {
