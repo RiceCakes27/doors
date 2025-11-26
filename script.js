@@ -282,7 +282,9 @@ async function createUserIcon(split) {
 //call to create new app window adds html to body and starts all listeners
 function openApp(el, url=el.id) {
     if (el.classList.contains('single-instance') && document.querySelector('#'+el.id+'-app') !== null) {
-        document.querySelector('#'+el.id+'-app').lastElementChild.src = url;
+        if (url.includes('?')) {
+            document.querySelector('#'+el.id+'-app').lastElementChild.src = url;
+        }
         let tbIcon = document.querySelector('#'+el.id+'.taskbar-icon');
         tbIcon.classList.add('active');
         setTopWindow(document.getElementById(el.id+'-app'));

@@ -61,7 +61,7 @@ select:hover {
 
 #taskbar, #taskbar-apps, #taskbar-icons, .taskbar-icon,
 #start-button, #search-button, #controls-button, .window-buttons,
-.icon, #rclick, .search-bar, .menu > div {
+.icon, #rclick, .search-bar, .menu > div, #buttonsHolder {
     display: flex;
     align-items: center;
 }
@@ -443,6 +443,7 @@ select:hover {
 }
 #rclick.tbRclick div:empty {
     width: 100%;
+    background-color: rgba(131, 131, 131, 0.2);
 }
 #rclick.tbRclick p {
     font-size: small;
@@ -456,10 +457,7 @@ select:hover {
 }
 
 .acrylic {
-    backdrop-filter: blur(20px);
-}
-.acrylic.menu {
-    backdrop-filter: blur(50px);
+    backdrop-filter: blur(55px);
 }
 
 .fullscreen {
@@ -637,7 +635,7 @@ select:hover {
 
 #buttonsHolder {
     width: 300px;
-    background-color: #202020;;
+    background-color: #202020;
 }
 #buttonsHolder div {
     width: 262px;
@@ -752,6 +750,7 @@ select:hover {
 }
 #menusHolder .vertical-box .dropdown > div > div > p {
     max-width: calc(100% - 230px);
+    position: relative;
 }
 .dropdown div:empty {
     height: 1px;
@@ -787,6 +786,7 @@ select:hover {
 .dropdown .horizontal-box {
     align-items: normal;
     margin-bottom: 12px;
+    height: fit-content;
     justify-content: center;
 }
 .dropdown a {
