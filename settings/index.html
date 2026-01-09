@@ -102,7 +102,7 @@
                                 <pre>?</pre><p>Fonts<br><span>Install, manage</span></p><p>&#57963;</p>
                             </div>
                             <div id="deviceusageButton" class="button" onclick="openMenu('Deviceusage')">
-                                <pre>&#60534;</pre><p>Device usage<br><span>Select all the ways you plan to use your device to get personalized tips, ads, and recommendations within Microsoft experiences.</span></p><p>&#57963;</p>
+                                <pre>&#60534;</pre><p>Device usage<br><span>Select all the ways you plan to use your device to get personalized tips, ads, and recommendations within Doors experiences.</span></p><p>&#57963;</p>
                             </div>
                         </div>
                     </div>
@@ -186,8 +186,24 @@
                         </div>
                     </div>
                     <!--put other menus here-->
-                    <div id="Start">
-                        <p>teehee nothing here yet</p>
+                    <div id="Start" class="hasSubMenu">
+                        <div class="active">
+                            <div class="vertical-box">
+                                <div class="button">
+                                    <pre>?</pre><p>Show recently added apps</p>
+                                </div>
+                                <div id="FoldersButton" class="button" onclick="openMenu('Folders')">
+                                    <pre>?</pre><p>Folders<br><span>These folders appear on Start next to the Power button</span></p><p>&#57963;</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="Folders">
+                            <div class="vertical-box">
+                                <div class="button">
+                                    <pre>?</pre><p>Settings</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="Taskbar">
                         <p>teehee nothing here yet</p>
@@ -217,10 +233,23 @@
             </div>
         </div>
         <button onclick="sendMsg('save')">save settings</button>
-        <button onclick="sendMsg('reset')">reset settings</button>
+        <button onclick="resetSettings()">reset settings</button>
         <p>reload after resetting to see the changes</p>
     </body>
     <script>
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open("StoredSettings", 1);
+
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    db.createObjectStore("background");
+                };
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
         function changeStylesheetRule(stylesheet, selector, property, value) {
             // Change it if it exists
             for(var i = 0; i < stylesheet.rules.length; i++) {
@@ -238,6 +267,7 @@
             window.top.postMessage(msg, '*');
         }
         function openMenu(menuId) {
+            //TODO: this needs to be able to open sub sub menus
             const menu = document.getElementById(menuId);
             if (menu == null) return;
             const button = document.getElementById(`${menuId}Button`);
@@ -283,6 +313,41 @@
             } else if (activeDropdown) {
                 activeDropdown.classList.remove('active');
                 dropdownToSet.classList.add('active');
+
+                switch (dropdownn) {
+                    case 'backgroundDropdown':
+                        (async () => {
+                            const db = await openDB();
+                            const tx = db.transaction("background", "readonly");
+                            const storedSettings = tx.objectStore("background");
+                            let isSaved = false;
+
+                            storedSettings.openCursor().onsuccess = e => {
+                                const cursor = e.target.result;
+                                if (!cursor) return;
+
+                                if (cursor.key == 'last'+dropdownSelector.value) {
+                                    sendMsg("style desktop background "+cursor.value); // base64 data URL
+                                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background", cursor.value);
+                                    isSaved = true;
+                                }
+
+                                cursor.continue();
+                            };
+                            if (!isSaved) {
+                                //idk this is stupid
+                                if (dropdownSelector.value == 'picture') {
+                                    sendMsg("style desktop background url('../assets/mybg.png')"); // base64 data URL
+                                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background", "url('../assets/mybg.png')");
+                                } else if (dropdownSelector.value == 'color'){
+                                    sendMsg("style desktop background black"); // base64 data URL
+                                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background", "black");
+                                }
+                            }
+                            await tx.complete;
+                        })();
+                    break;
+                }
             }
         }
         function pickImage() {
@@ -299,10 +364,15 @@
 
                 const reader = new FileReader();
                 reader.onload = () => {
-                    sendMsg("style desktop background-image url("+reader.result+")"); // base64 data URL
-                    sendMsg("style desktop background-color none");
-                    
-                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background-image", `url(${reader.result})`);
+                    sendMsg("style desktop background url("+reader.result+")"); // base64 data URL
+                    changeStylesheetRule(document.styleSheets[0], "#desktop", "background", `url(${reader.result})`);
+                    (async () => {
+                        const db = await openDB();
+                        const tx = db.transaction("background", "readwrite");
+                        const storedSettings = tx.objectStore("background");
+                        storedSettings.put(`url(${reader.result})`, 'lastpicture');
+                        await tx.complete;
+                    })();
                 }
                 reader.onerror = () => reject('Failed to read file');
                 reader.readAsDataURL(file);
@@ -315,12 +385,24 @@
             input.type = 'color';
 
             input.onchange = () => {
-                sendMsg("style desktop background-color "+input.value);
-                sendMsg("style desktop background-image none");
+                sendMsg("style desktop background "+input.value);
+                changeStylesheetRule(document.styleSheets[0], "#desktop", "background", input.value);
+                (async () => {
+                    const db = await openDB();
+                    const tx = db.transaction("background", "readwrite");
+                    const storedSettings = tx.objectStore("background");
+                    storedSettings.put(input.value, 'lastcolor');
+                    await tx.complete;
+                })();
             };
             
             input.click();
         }
+        async function resetSettings() {
+            window.indexedDB.deleteDatabase("UIStorage");
+            window.indexedDB.deleteDatabase("StoredSettings");
+        }
+        window.indexedDB.deleteDatabase("toDoList")
         document.querySelector('.button select').addEventListener('click', e => {
             e.stopPropagation();
         });

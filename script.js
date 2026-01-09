@@ -188,6 +188,7 @@ function createTaskbarButton(el) {
                             switch(el.id) {
                                 case 'start-button':
                                     menu.firstChild.children[1].placeholder = 'Search for apps, settings, and documents';
+                                    menu.firstChild.children[1].id = 'start-search';
                                     menu.insertAdjacentHTML('beforeend', `
                                         <div>
                                             <h5>Pinned</h5>
@@ -218,6 +219,7 @@ function createTaskbarButton(el) {
                                     });
                                 break;
                                 case 'search-button':
+                                    menu.firstChild.children[1].id = 'search-search';
                                     menu.insertAdjacentHTML('beforeend', '<h5>Recent</h5>');
                                 break;
                             }
@@ -353,7 +355,9 @@ function openApp(el, url=el.id) {
             function handleMouseMove(cursor) {
                 if (dragging) {
                     elem.style.cursor = 'auto';
-                    elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                    if (cursor.y < taskbar.getBoundingClientRect().top) {
+                        elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
+                    }
                     elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
                 } else {
                     if(y < borderSize) {
@@ -992,15 +996,6 @@ window.onmessage = function(e) {
                 });
 
                 await tx.complete;
-            })();
-        break;
-        case 'reset':
-            (async () => {
-                const db = await openDB();
-                const tx = db.transaction(["styles", "classes", "elements"], "readwrite");
-                tx.objectStore("styles").clear();
-                tx.objectStore("classes").clear();
-                tx.objectStore("elements").clear();
             })();
         break;
         case 'style':

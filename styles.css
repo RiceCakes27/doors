@@ -660,7 +660,7 @@ select:hover {
 #menusHolder h2 a:not(:hover) {
     opacity: 0.8;
 }
-#menusHolder > div, #menusHolder > div > div {
+#menusHolder > div, #menusHolder > div > div, .hasSubMenu > div:not(.active) {
     display: none;
 }
 #menusHolder > div > div {
@@ -749,6 +749,9 @@ select:hover {
     display: inline;
 }
 #menusHolder .vertical-box .dropdown > div > div > p {
+    position: relative;
+}
+#menusHolder .vertical-box .dropdown > div > div:has(:is(.button, select)) > p {
     max-width: calc(100% - 230px);
     position: relative;
 }
