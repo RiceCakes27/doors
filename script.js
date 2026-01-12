@@ -346,6 +346,9 @@ function openApp(el, url=el.id) {
         let dragging = false;
         elem.addEventListener('mousedown', (e) => {
             let elemArea = elem.getBoundingClientRect();
+            if (e.target.classList.contains('window') && (!e.target.classList.contains('paned') && !e.target.classList.contains('fullscreen'))) {
+                storedBounds = elemArea;
+            }
             let y = relativeY, x = relativeX;
             document.querySelectorAll('.taskbar-icon.active').forEach((icon) => {
                 icon.classList.remove('active');
@@ -386,7 +389,38 @@ function openApp(el, url=el.id) {
                     }       
                 }
             };
-            function noMoreDrag() {
+            function noMoreDrag(cursor) {
+                function panes() {
+                    let tbTop = taskbar.getBoundingClientRect().top;
+                    elem.style.width = window.innerWidth/2+'px';
+                    if (cursor.y < 100) {
+                        elem.style.top = 0;
+                        elem.style.height = tbTop/2+'px';
+                    } else if (cursor.y > tbTop-100) {
+                        elem.style.top = tbTop/2+'px';
+                        elem.style.height = tbTop/2+'px';
+                    } else {
+                        elem.style.top = 0;
+                        elem.style.height = tbTop+'px';
+                    }
+                }
+                if (cursor.x < 50) {
+                    elem.classList.add('paned');
+                    elem.style.left = 0;
+                    panes();
+                } else if (cursor.x > window.innerWidth-50) {
+                    elem.classList.add('paned');
+                    elem.style.left = window.innerWidth/2+'px';
+                    panes();
+                } else if (cursor.y < 50) {
+                    elem.classList.add('fullscreen');
+                    taskbar.classList.add('acrylic');
+                    elem.style.left = 0;
+                    elem.style.top = 0;
+                    elem.style.width = window.innerWidth+'px';
+                    elem.style.height = tbTop+'px';
+                }
+
                 document.removeEventListener('mousemove', handleMouseMove);
                 document.removeEventListener('mouseup', noMoreDrag);
                 elem.lastChild.style.pointerEvents = 'all';
@@ -396,11 +430,14 @@ function openApp(el, url=el.id) {
 
                 //unfullscreen when grab window while fullscreen
                 if (elem.classList.contains('fullscreen')) {
-                    elem.classList.remove('fullscreen');
-                    //TODO: make window return to non full screen position and size
-                    //elem.style.width = storedBounds.width+'px';
-                    //elem.style.height = storedBounds.height+'px';
-                    //elem.style.left = e.x+'px';
+                    //would be cool to have the cursor not just put in the middle
+                    elem.style.left = (e.x-storedBounds.width/2)+'px';
+                    elemArea = elem.getBoundingClientRect();
+                }
+                if (elem.classList.contains('paned') || elem.classList.contains('fullscreen')) {
+                    elem.style.width = storedBounds.width+'px';
+                    elem.style.height = storedBounds.height+'px';
+                    elem.classList.remove('paned', 'fullscreen');
                 }
                 //i use TranslucentTB and i have it set up to go acrylic when theres a fullscreen window so yeah thats why this is here
                 //if there are no fullscreen windows disable acrylic taskbar
@@ -449,13 +486,13 @@ function openApp(el, url=el.id) {
                 elem.style.width = storedBounds.width+'px';
                 elem.style.height = storedBounds.height+'px';
             } else {
-                storedBounds = elem.getBoundingClientRect();
+                if (!elem.classList.contains('paned')) storedBounds = elem.getBoundingClientRect();
                 elem.classList.add('fullscreen');
                 taskbar.classList.add('acrylic');
                 elem.style.left = 0;
                 elem.style.top = 0;
-                elem.style.width = desktop.getBoundingClientRect().width+'px';
-                elem.style.height = desktop.getBoundingClientRect().height-taskbar.getBoundingClientRect().height+'px';
+                elem.style.width = window.innerWidth+'px';
+                elem.style.height = taskbar.getBoundingClientRect().top+'px';
             }
         });
         document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
