@@ -351,15 +351,18 @@ function openApp(el, url=el.id) {
                 icon.classList.remove('active');
             });
             !taskbarIcon.classList.contains('active') ? taskbarIcon.classList.add('active') : '';
-            //window dragging
             function handleMouseMove(cursor) {
                 if (dragging) {
+                    //window dragging
                     elem.style.cursor = 'auto';
-                    if (cursor.y < taskbar.getBoundingClientRect().top) {
+                    if (cursor.y < taskbar.getBoundingClientRect().top && cursor.y > 0) {
                         elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
                     }
-                    elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                    if (cursor.x < window.innerWidth && cursor.x > 0) {
+                        elem.style.left = cursor.x-(e.x-elemArea.left)+"px";
+                    }
                 } else {
+                    //window resizing
                     if(y < borderSize) {
                         if ((elemArea.height+elemArea.top)-cursor.y > elem.firstChild.offsetHeight + 15) {
                             elem.style.top = cursor.y-(e.y-elemArea.top)+"px";
