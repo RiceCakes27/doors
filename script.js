@@ -390,8 +390,8 @@ function openApp(el, url=el.id) {
                 }
             };
             function noMoreDrag(cursor) {
+                let tbTop = taskbar.getBoundingClientRect().top;
                 function panes() {
-                    let tbTop = taskbar.getBoundingClientRect().top;
                     elem.style.width = window.innerWidth/2+'px';
                     if (cursor.y < 100) {
                         elem.style.top = 0;
