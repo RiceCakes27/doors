@@ -275,9 +275,24 @@
             const activeButton = document.querySelector('#buttonsHolder > div.active');
             if (activeMenu.contains(menu) && button !== activeButton) {
                 //sub menu
-                activeMenu.querySelector(':scope > div.active').classList.remove('active');
-
-                activeMenu.firstElementChild.innerHTML = `<a onclick="openMenu('${activeMenu.id}')">${activeMenu.firstElementChild.textContent}</a> > ${menuId}`;
+                if (!menu.parentElement.classList.contains('hasSubMenu')) {
+                    activeMenu.querySelector(':scope > div.active').classList.remove('active');
+                    if (menu.classList.contains('hasSubMenu')) {
+                        menu.querySelector(':scope > div.active').classList.remove('active');
+                        menu.firstElementChild.classList.add('active');
+                    }
+                } else {
+                    menu.parentElement.querySelector(':scope > div.active').classList.remove('active');
+                }
+                let menuText = activeMenu.firstElementChild;
+                if (menuText.textContent.split('>').length == 1) {
+                    menuText.innerHTML = `<a onclick="openMenu('${activeMenu.id}')">${menuText.textContent}</a> > ${menuId}`;
+                } else if (menuText.textContent.includes(menuId)) {
+                    menuText.innerHTML = menuText.innerHTML.split('&gt;')[0]+' > '+menuText.innerHTML.split('&gt;')[1];
+                } else {
+                    menuText.innerHTML = menuText.innerHTML.split('&gt;')[0]+`> <a onclick="openMenu('${menu.parentElement.id}')">${menuText.textContent.split('>')[1]}</a> > ${menuId}`;
+                }
+                
             } else {
                 activeButton.classList.remove('active');
                 activeMenu.classList.remove('active');
