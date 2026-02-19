@@ -144,6 +144,7 @@ function createTaskbarButton(el) {
                         el.classList.add('active', 'maximize');
                         app.style.display = 'block';
                         setTopWindow(app);
+                        if (app.classList.contains('fullscreen')) taskbar.classList.add('acrylic');
                     //if app visible but app not focused, "focus" app
                     } else if (app.style.display !== 'none') {
                         el.classList.add('active');
@@ -504,6 +505,14 @@ function openApp(el, url=el.id) {
             setTimeout(() => {
                 taskbarIcon.classList.add('minimize');
             }, 0);
+            let removeAcryic = true;
+            document.querySelectorAll('.fullscreen').forEach(window => {
+                if (window.style.display !== 'none') removeAcryic = false;
+            });
+            if (removeAcryic) {
+                taskbar.classList.remove('acrylic');
+                removeAcryic = true;
+            }
         });
     }
 }
