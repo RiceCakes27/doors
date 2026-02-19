@@ -468,6 +468,10 @@ select:hover {
     border-radius: 0;
 }
 
+.minimized {
+    display: none;
+}
+
 @keyframes up {
     0% {
         transform: translateY(var(--startingY));

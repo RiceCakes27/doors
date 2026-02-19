@@ -99,7 +99,7 @@ function getElementPath(el) {
 //TODO: fix window zIndex ordering
 //window zIndex ordering
 function setTopWindow(elem) {
-    elem.style.display = 'block';
+    if (elem.classList.contains('minimized')) elem.classList.remove('minimized');
     let allWindows = document.querySelectorAll('.window');
     if (elem.style.zIndex != allWindows.length) {
         elem.style.zIndex = allWindows.length;
@@ -135,17 +135,19 @@ function createTaskbarButton(el) {
                     //reset animation
                     el.classList.remove('maximize', 'minimize');
                     //if app is visible and focused, hide and play minimize animation
-                    if (app.style.display !== 'none' && el.classList.contains('active')) {
+                    if (!app.classList.contains('minimized') && el.classList.contains('active')) {
                         el.classList.remove('active');
                         el.classList.add('minimize');
-                        app.style.display = 'none';
+                        app.classList.add('minimized');
+                        if (document.querySelectorAll('.fullscreen.minimized').length == document.querySelectorAll('.fullscreen').length) taskbar.classList.remove('acrylic');
                     //if app not visible, show and play maximize animation
-                    } else if (app.style.display == 'none') {
+                    } else if (app.classList.contains('minimized')) {
                         el.classList.add('active', 'maximize');
-                        app.style.display = 'block';
+                        app.classList.remove('minimized');
                         setTopWindow(app);
+                        if (document.querySelectorAll('.fullscreen.minimized').length < document.querySelectorAll('.fullscreen').length) taskbar.classList.add('acrylic');
                     //if app visible but app not focused, "focus" app
-                    } else if (app.style.display !== 'none') {
+                    } else if (!app.classList.contains('minimized')) {
                         el.classList.add('active');
                         setTopWindow(app);
                     }
@@ -496,7 +498,7 @@ function openApp(el, url=el.id) {
             }
         });
         document.querySelector('#'+elem.id+' .min').addEventListener('click', () => {
-            elem.style.display = 'none';
+            elem.classList.add('minimized');
             if (document.querySelectorAll('#'+elem.id).length <= 1) {
                 taskbarIcon.classList.remove('active');
             }
@@ -504,6 +506,7 @@ function openApp(el, url=el.id) {
             setTimeout(() => {
                 taskbarIcon.classList.add('minimize');
             }, 0);
+            if (document.querySelectorAll('.fullscreen.minimized').length == document.querySelectorAll('.fullscreen').length) taskbar.classList.remove('acrylic');
         });
     }
 }
