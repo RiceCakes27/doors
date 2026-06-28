@@ -227,11 +227,45 @@ function createTaskbarButton(el) {
                             }
                         }
                         if (el.parentElement.id == 'taskbar-icons') {
-                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right acrylic"><div/>');
+                            document.body.insertAdjacentHTML('afterbegin', '<div id="'+el.id.split('-')[0]+'-menu" class="menu right acrylic"></div>');
                             let menu = document.getElementById(el.id.split('-')[0]+'-menu');
                             switch(el.id) {
                                 case 'controls-button':
                                     //TODO: controls menu
+                                    menu.insertAdjacentHTML('beforeend', `
+                                        <div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>&#59137;</p><div></div><p>&#59764;</p>
+                                                </div>
+                                            </div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>&#59138;</p><div></div><p>&#59764;</p>
+                                                </div>
+                                            </div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>&#59145;</p>
+                                                </div>
+                                            </div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>?</p>
+                                                </div>
+                                            </div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>&#59140;</p>
+                                                </div>
+                                            </div>
+                                            <div class="button acrylic">
+                                                <div>
+                                                    <p>?</p><p>&#59764;</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `);
                                 break;
                                 case 'clock-button':
                                     //TODO: calander and notifs menu
@@ -740,7 +774,7 @@ document.oncontextmenu = function(e) {
             document.getElementById('copyAsPath').addEventListener('click', () => {
                 const path = location.pathname.split('/')[1] ? '/' + location.pathname.split('/')[1] : '';
                 const url = e.target.getAttribute('url');
-                navigator.clipboard.writeText(`${location.host+path}/?${url !== null ? url.split('://')[url.split('://').length - 1] : e.target.id+'.url'}`);
+                navigator.clipboard.writeText(`${location.host+path}/?${url.split('://').length !== 1 ? url.split('://')[url.split('://').length - 1] : e.target.id+'.url'}`);
                 rclick.remove();
             });
             /*document.getElementById('share').addEventListener('click', () => {

@@ -541,6 +541,35 @@ select:hover {
     aspect-ratio: 155 / 144;
 }
 
+#controls-menu {
+    height: 315px;
+    width: 335px;
+}
+#controls-menu > div {
+    display: flex;
+    margin: 20px;
+    column-gap: 12px;
+    row-gap: 25px;
+    flex-wrap: wrap;
+}
+#controls-menu .button {
+    width: 90px;
+    height: 45px;
+    font-family: "Segoe Icons";
+}
+#controls-menu .button p {
+    font-family: "Segoe Icons";
+    font-size: medium;
+    display: inline;
+}
+#controls-menu .button div:empty {
+    width: 1px;
+    height: 100%;
+    margin: 0 10px 0 10px;
+    display: inline-block;
+    background-color: rgba(131, 131, 131, 0.2);
+}
+
 #pinnedApps {
     display: flex;
     flex-direction: row;
